@@ -889,6 +889,9 @@ export const DICIONARIO: Traducoes = {
   "Sem motivos cadastrados o motivo de ganho é texto livre. Com a lista, só o que está nela é aceito.": {
     es: "Sin motivos registrados, el motivo de negocio ganado es texto libre. Con la lista, solo se acepta lo que está en ella.",
   },
+  "Exigir o valor do negócio ao fechar como ganho": {
+    es: "Exigir el valor del negocio al cerrar como ganado",
+  },
   "Exigir motivo de ganho ao fechar como ganho": {
     es: "Exigir motivo al cerrar como ganado",
   },

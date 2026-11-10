@@ -436,7 +436,7 @@ export function KanbanBoard({
         }}
         recusa={recusaDeCampos}
         isPending={moveCard.isPending}
-        onConfirmar={({ customFields, wonReason }) => {
+        onConfirmar={({ customFields, wonReason, valueCents }) => {
           if (!recusaDeCampos) return;
           const { args } = recusaDeCampos;
           setRecusaDeCampos(null);
@@ -444,6 +444,7 @@ export function KanbanBoard({
             ...args,
             customFields,
             ...(wonReason !== undefined ? { wonReason } : {}),
+            ...(valueCents !== undefined ? { valueCents } : {}),
           });
         }}
       />

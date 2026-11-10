@@ -51,6 +51,13 @@ export const moveLeadSchema = z.object({
    * segunda tentativa passa na mesma régua que a primeira recusou.
    */
   custom_fields: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * sfy (Bloco A): o valor do negócio em centavos que o diálogo de campos
+   * obrigatórios coletou, quando o funil exige valor no ganho
+   * (`settings.sfy_valor_obrigatorio_ao_ganhar`). Só é gravado quando a etapa
+   * de destino é de ganho, na MESMA escrita que muda a etapa.
+   */
+  value_cents: z.number().int().positive().max(1e13).optional(),
 });
 export type MoveLeadInput = z.infer<typeof moveLeadSchema>;
 

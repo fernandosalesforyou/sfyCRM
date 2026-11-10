@@ -437,6 +437,12 @@ export const pipelineConfigPatchSchema = z.object({
   /** Obrigatóriedade do motivo de ganho, opt-in por funil (padrão: não exigir). */
   won_reason_required: z.boolean().optional(),
   /**
+   * sfy (fork Sales for You, Bloco A): o VALOR do negócio passa a ser exigido
+   * quando a escrita o fecha como ganho. Opt-in por funil; ausente = como no
+   * original (valor livre). Quem decide é `lib/leads/campos-exigidos.ts`.
+   */
+  sfy_valor_obrigatorio_ao_ganhar: z.boolean().optional(),
+  /**
    * A comanda do ganho, opt-in por funil (CR do PR #2220, #1477). Ausente ou
    * `false` é DESLIGADO — o padrão que a doutrina de extensões exige ("se
    * nenhuma organização ativar isto, a operação comum continua inteira?"): em

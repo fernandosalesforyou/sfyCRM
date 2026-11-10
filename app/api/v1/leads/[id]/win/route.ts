@@ -44,6 +44,12 @@ export async function POST(
     typeof (corpo as { won_reason?: unknown }).won_reason === "string"
       ? ((corpo as { won_reason: string }).won_reason as string)
       : null;
+  // sfy (Bloco A): valor do ganho opcional no corpo (centavos inteiros > 0).
+  const valorBruto = (corpo as { value_cents?: unknown }).value_cents;
+  const valorCents =
+    typeof valorBruto === "number" && Number.isInteger(valorBruto) && valorBruto > 0
+      ? valorBruto
+      : null;
 
   try {
     const { lead } = await encerraDemanda(
@@ -54,7 +60,7 @@ export async function POST(
         requestId,
         idioma: authz.user.idioma,
       },
-      { leadId, desfecho: "won", motivo: wonReason },
+      { leadId, desfecho: "won", motivo: wonReason, valorCents },
     );
     return ok(lead, { requestId });
   } catch (err) {

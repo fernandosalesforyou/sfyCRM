@@ -53,13 +53,20 @@ interface CamposObrigatoriosDialogProps {
   /** A recusa que abriu este diálogo — argumentos originais + o que falta. */
   recusa: RecusaDeCampos | null;
   /** Envia o move de novo, com os valores coletados na MESMA escrita. */
-  onConfirmar: (valores: { customFields: Record<string, unknown>; wonReason?: string }) => void;
+  onConfirmar: (valores: {
+    customFields: Record<string, unknown>;
+    wonReason?: string;
+    /** sfy (Bloco A): valor do ganho em centavos — coluna própria, como o motivo. */
+    valueCents?: number;
+  }) => void;
   /** Enquanto o reenvio não responde, o botão fica travado. */
   isPending?: boolean;
 }
 
 /** `won_reason` NÃO é campo do funil: sai como parâmetro próprio do move. */
 const CHAVE_DO_MOTIVO_DE_GANHO = "won_reason";
+/** sfy (Bloco A): `value_cents` também é coluna, e sai como parâmetro próprio. */
+const CHAVE_DO_VALOR_DO_GANHO = "value_cents";
 
 function inputHtmlParaTipo(tipo: string | undefined): string {
   switch (tipo) {
@@ -125,6 +132,7 @@ export function CamposObrigatoriosDialog({
     if (!valido || isPending) return;
     const customFields: Record<string, unknown> = {};
     let wonReason: string | undefined;
+    let valueCents: number | undefined;
     for (const campo of campos) {
       const bruto = valores[campo.chave] ?? "";
       const valor = bruto.trim();
@@ -139,6 +147,10 @@ export function CamposObrigatoriosDialog({
         customFields[campo.chave] = Number(valor);
         continue;
       }
+      if (campo.chave === CHAVE_DO_VALOR_DO_GANHO) {
+        valueCents = lerCampoDeMoeda(valor, moeda) ?? undefined;
+        continue;
+      }
       if (campo.tipo === "currency") {
         customFields[campo.chave] = (lerCampoDeMoeda(valor, moeda) ?? 0) / 100;
         continue;
@@ -149,7 +161,11 @@ export function CamposObrigatoriosDialog({
       }
       customFields[campo.chave] = valor;
     }
-    onConfirmar({ customFields, ...(wonReason !== undefined ? { wonReason } : {}) });
+    onConfirmar({
+      customFields,
+      ...(wonReason !== undefined ? { wonReason } : {}),
+      ...(valueCents !== undefined ? { valueCents } : {}),
+    });
   };
 
   return (
@@ -166,7 +182,12 @@ export function CamposObrigatoriosDialog({
 
         <div className="space-y-3">
           {campos.map((campo) => {
-            const nome = campo.chave === "won_reason" ? t("Motivo do ganho") : campo.rotulo;
+            const nome =
+              campo.chave === "won_reason"
+                ? t("Motivo do ganho")
+                : campo.chave === CHAVE_DO_VALOR_DO_GANHO
+                  ? t("Valor do negócio")
+                  : campo.rotulo;
             const rotuloCampo = `${nome}${campo.tipo === "boolean" ? "" : " *"}`;
             if (campo.tipo === "boolean") {
               return (

@@ -150,6 +150,20 @@ interface EntradaDeCampos {
    * existir.
    */
   semAnexosAinda?: boolean;
+  /**
+   * sfy (Bloco A): o valor em centavos que esta escrita TRAZ junto (o diálogo
+   * de campos obrigatórios reenvia o move/ganho com ele). Coluna própria
+   * (`crm_leads.value_cents`), como o motivo do ganho — nunca `custom_fields`.
+   */
+  valorProposto?: number | null;
+}
+
+/** sfy (Bloco A): a chave nativa do valor no `faltando` — coluna, não campo do funil. */
+export const CHAVE_DO_VALOR_DO_GANHO = "value_cents";
+
+function valorDoGanhoPreenchido(valor: unknown): boolean {
+  const n = typeof valor === "string" ? Number(valor) : valor;
+  return typeof n === "number" && Number.isFinite(n) && n > 0;
 }
 
 /** `undefined`/`null`/branco/array vazio são ausência; `false` e `0` são resposta. */
@@ -307,6 +321,17 @@ export function validaCamposExigidos(entrada: EntradaDeCampos): VereditoDeCampos
     faltando.push({ chave: "won_reason", rotulo: "Motivo do ganho" });
   }
 
+  // sfy (Bloco A): o VALOR do negócio no ganho, opt-in por funil
+  // (`settings.sfy_valor_obrigatorio_ao_ganhar`). Zero não conta como valor:
+  // é o ganho "sem valor" que a regra existe para impedir.
+  if (
+    entrada.destino.desfecho === "won" &&
+    settings.sfy_valor_obrigatorio_ao_ganhar === true &&
+    !valorDoGanhoPreenchido(entrada.valorProposto ?? entrada.lead.value_cents)
+  ) {
+    faltando.push({ chave: CHAVE_DO_VALOR_DO_GANHO, rotulo: "Valor do negócio", tipo: "currency" });
+  }
+
   return { faltando };
 }
 
@@ -322,7 +347,11 @@ export function recusaDeCamposObrigatorios(
   // Só o rótulo nativo tem tradução; o de campo personalizado é texto do funil.
   const nomes = faltando
     .map((c) =>
-      c.chave === "won_reason" ? traduzir("Motivo do ganho", idioma ?? IDIOMA_PADRAO) : c.rotulo,
+      c.chave === "won_reason"
+        ? traduzir("Motivo do ganho", idioma ?? IDIOMA_PADRAO)
+        : c.chave === CHAVE_DO_VALOR_DO_GANHO
+          ? traduzir("Valor do negócio", idioma ?? IDIOMA_PADRAO)
+          : c.rotulo,
     )
     .join(", ");
   return {

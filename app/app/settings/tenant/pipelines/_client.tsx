@@ -947,6 +947,11 @@ function PipelineEditor({
   const [wonRequired, setWonRequired] = useState(
     (pipeline.settings as { won_reason_required?: unknown } | null)?.won_reason_required === true,
   );
+  // sfy (Bloco A): valor do negócio exigido no ganho — opt-in, padrão desligado.
+  const [valorNoGanho, setValorNoGanho] = useState(
+    (pipeline.settings as { sfy_valor_obrigatorio_ao_ganhar?: unknown } | null)
+      ?.sfy_valor_obrigatorio_ao_ganhar === true,
+  );
   // A comanda do ganho (#1477): opt-in, e o PADRÃO é a chave ausente — só o
   // `true` explícito liga. Ausência aqui renderiza desmarcado, que é o mesmo
   // que o consumidor de `lead.won` lê no banco.
@@ -1164,6 +1169,7 @@ function PipelineEditor({
       lost_reasons: motivosComCategoria,
       won_reasons: wonReasons,
       won_reason_required: wonRequired,
+      sfy_valor_obrigatorio_ao_ganhar: valorNoGanho,
       comanda_no_ganho: comandaNoGanho,
       reabertura: retomaComoNovo ? "novo_negocio" : "mesmo_registro",
       // A ENTRADA DAS CONVERSAS DO INBOX (#3011) vai no MESMO patch, pela
@@ -1317,6 +1323,14 @@ function PipelineEditor({
             onChange={(e) => setWonRequired(e.target.checked)}
           />
           {t("Exigir motivo de ganho ao fechar como ganho")}
+        </label>
+        <label className="flex items-center gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={valorNoGanho}
+            onChange={(e) => setValorNoGanho(e.target.checked)}
+          />
+          {t("Exigir o valor do negócio ao fechar como ganho")}
         </label>
       </div>
 

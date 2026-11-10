@@ -53,6 +53,12 @@ export interface EncerraDemandaInput {
    */
   motivo?: string | null;
   /**
+   * sfy (Bloco A): o valor do negócio em centavos trazido junto com o ganho,
+   * quando o funil exige valor (`settings.sfy_valor_obrigatorio_ao_ganhar`).
+   * Gravado na MESMA escrita que fecha o negócio; ignorado na perda.
+   */
+  valorCents?: number | null;
+  /**
    * A razão da linha na timeline, quando o desfecho padrão ("Ganho" /
    * "Perdido — <motivo>") diria algo FALSO a quem lê. Hoje só a troca de funil a
    * usa: a origem fecha como perda porque é o único desfecho que o schema oferece
@@ -229,6 +235,7 @@ export async function encerraDemanda(
     ),
     destino: { stageId: stage.id, desfecho: input.desfecho },
     motivoDeGanho: input.desfecho === "won" ? input.motivo ?? null : null,
+    valorProposto: input.desfecho === "won" ? input.valorCents ?? null : null,
   });
   if (vereditoDeCampos.faltando.length > 0) {
     const recusa = recusaDeCamposObrigatorios(
@@ -277,6 +284,15 @@ export async function encerraDemanda(
   // decidida acima, nunca do banco).
   if (input.desfecho === "won" && input.motivo?.trim()) {
     patch.won_reason = input.motivo.trim();
+  }
+  // sfy (Bloco A): o valor do ganho entra na mesma escrita que fecha.
+  if (
+    input.desfecho === "won" &&
+    typeof input.valorCents === "number" &&
+    Number.isInteger(input.valorCents) &&
+    input.valorCents > 0
+  ) {
+    patch.value_cents = input.valorCents;
   }
 
   const escrita = supabase

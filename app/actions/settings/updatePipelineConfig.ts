@@ -73,6 +73,9 @@ export async function updatePipelineConfig(
   if (parsed.data.won_reason_required !== undefined) {
     nextSettings.won_reason_required = parsed.data.won_reason_required;
   }
+  if (parsed.data.sfy_valor_obrigatorio_ao_ganhar !== undefined) {
+    nextSettings.sfy_valor_obrigatorio_ao_ganhar = parsed.data.sfy_valor_obrigatorio_ao_ganhar;
+  }
   if (parsed.data.comanda_no_ganho !== undefined) {
     nextSettings.comanda_no_ganho = parsed.data.comanda_no_ganho;
   }
@@ -151,6 +154,7 @@ export async function updatePipelineConfig(
       lost_reasons_count: parsed.data.lost_reasons?.length ?? null,
       won_reasons_count: parsed.data.won_reasons?.length ?? null,
       won_reason_required: parsed.data.won_reason_required ?? null,
+      sfy_valor_obrigatorio_ao_ganhar: parsed.data.sfy_valor_obrigatorio_ao_ganhar ?? null,
       reabertura: parsed.data.reabertura ?? null,
       // #4076: a janela (ou `0`, o desligamento) — decisão de quem opera, e o
       // efeito dela é reabrir card existente, então fica registrado.

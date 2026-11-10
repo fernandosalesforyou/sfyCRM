@@ -169,6 +169,7 @@ export async function POST(
         },
         motivoDeGanho: input.won_reason ?? null,
         customFieldsPropostos: input.custom_fields ?? null,
+        valorProposto: input.value_cents ?? null,
       });
   if (vereditoDeCampos.faltando.length > 0) {
     const recusa = recusaDeCamposObrigatorios(vereditoDeCampos.faltando, user.idioma);
@@ -222,6 +223,8 @@ export async function POST(
       ...(stage.is_won && input.won_reason?.trim()
         ? { won_reason: input.won_reason.trim() }
         : {}),
+      // sfy (Bloco A): o valor exigido no ganho, na mesma escrita.
+      ...(stage.is_won && input.value_cents ? { value_cents: input.value_cents } : {}),
       // O merge é AQUI, nunca num PATCH anterior: ver `custom_fields` em
       // `moveLeadSchema` — dois writes teriam janela e uma segunda OCC.
       ...(input.custom_fields

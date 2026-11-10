@@ -222,6 +222,7 @@
   "Mover agora": "Move now",
   "Motivos de ganho (separados por vírgula)": "Win reasons (comma-separated)",
   "Sem motivos cadastrados o motivo de ganho é texto livre. Com a lista, só o que está nela é aceito.": "With no reasons registered, the win reason is free text. With the list, only what's on it is accepted.",
+  "Exigir o valor do negócio ao fechar como ganho": "Require the deal value when closing as won",
   "Exigir motivo de ganho ao fechar como ganho": "Require a win reason when closing as won",
   "Negócio encerrado que volta abre um negócio novo": "A closed deal that comes back opens a new deal",
   "Desligado, arrastar um negócio perdido ou ganho para uma etapa aberta reabre o mesmo negócio. Ligado, o encerrado fica como está e o quadro oferece criar uma nova tentativa com o mesmo contato.": "Off, dragging a lost or won deal to an open stage reopens the same deal. On, the closed deal stays as it is, and the board offers to create a new attempt with the same contact.",
