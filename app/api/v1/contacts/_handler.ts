@@ -51,6 +51,7 @@ import {
   recusasDePadrao,
 } from "@/lib/leads/padrao-do-campo";
 import { testaComPrazo } from "@/lib/leads/padrao-do-campo-no-servidor";
+import { recusaSfyDoBanco } from "@/lib/sfy/regras";
 
 type SB = SupabaseClient;
 
@@ -1364,6 +1365,9 @@ export async function deleteContactHandler(
       p_contact_id: contactId,
       p_organization_id: ctx.organization_id,
     });
+    // sfy (Bloco A2): a trava do banco (migration 5001) vira 403 de negócio.
+    const recusaSfy = recusaSfyDoBanco(rpcErr, ctx.requestId, ctx.idioma);
+    if (recusaSfy) throw recusaSfy;
     throwOnDbError(rpcErr, ctx.requestId, ctx.idioma);
     apagou = data === true;
   } catch (err) {

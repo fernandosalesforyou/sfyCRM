@@ -889,6 +889,33 @@ export const DICIONARIO: Traducoes = {
   "Sem motivos cadastrados o motivo de ganho é texto livre. Com a lista, só o que está nela é aceito.": {
     es: "Sin motivos registrados, el motivo de negocio ganado es texto libre. Con la lista, solo se acepta lo que está en ella.",
   },
+  "Só o administrador pode excluir negócios e contatos.": {
+    es: "Solo el administrador puede eliminar negocios y contactos.",
+  },
+  "Só o administrador pode alterar o valor ou reabrir um negócio ganho.": {
+    es: "Solo el administrador puede cambiar el valor o reabrir un negocio ganado.",
+  },
+  "Regras de proteção salvas.": {
+    es: "Reglas de protección guardadas.",
+  },
+  "Não foi possível salvar as regras de proteção.": {
+    es: "No fue posible guardar las reglas de protección.",
+  },
+  "Regras de proteção": {
+    es: "Reglas de protección",
+  },
+  "Valem para a empresa inteira. Quem é administrador continua podendo tudo.": {
+    es: "Valen para toda la empresa. Quien es administrador sigue pudiendo todo.",
+  },
+  "Só o administrador exclui negócios e contatos": {
+    es: "Solo el administrador elimina negocios y contactos",
+  },
+  "Só o administrador altera o valor ou reabre um negócio ganho": {
+    es: "Solo el administrador cambia el valor o reabre un negocio ganado",
+  },
+  "Aplicar regras de proteção": {
+    es: "Aplicar reglas de protección",
+  },
   "Exigir o valor do negócio ao fechar como ganho": {
     es: "Exigir el valor del negocio al cerrar como ganado",
   },

@@ -20,6 +20,7 @@ import { perfilDaOrganizacao } from "@/lib/legal/perfil-do-pais";
 import { createClient } from "@/lib/supabase/server";
 
 import { deleteContactHandler, getContactHandler, patchContactHandler } from "../_handler";
+import { MENSAGEM_EXCLUSAO_SO_ADMIN, regraSfyDaOrganizacao } from "@/lib/sfy/regras";
 
 export const dynamic = "force-dynamic";
 
@@ -197,6 +198,20 @@ export async function DELETE(
   const activeOrg = authz.org;
 
   const supabase = await createClient();
+
+  // sfy (Bloco A2): só o admin apaga contato quando a organização liga a regra.
+  // A trava real é o gatilho do banco (migration 5001); aqui se recusa cedo.
+  if (
+    activeOrg.role !== "admin" &&
+    (await regraSfyDaOrganizacao(supabase, activeOrg.orgId, "exclusao_so_admin"))
+  ) {
+    return fail(
+      "sfy_delete_admin_only",
+      traduzir(MENSAGEM_EXCLUSAO_SO_ADMIN, user.idioma ?? "pt-BR"),
+      403,
+      { requestId },
+    );
+  }
 
   try {
     await deleteContactHandler(

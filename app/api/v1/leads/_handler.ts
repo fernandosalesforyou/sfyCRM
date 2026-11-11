@@ -61,6 +61,7 @@ import { ehCorrecaoDeMovimentoDaIa } from "@/lib/leads/correcao-humana";
 import { ocultarProvaMetaNaResposta, removerProvaMetaLeadSubmitted } from "@/lib/leads/prova-meta-lead-submitted";
 import { ehRecusaDaVisibilidadeDoFunil } from "@/lib/leads/recusa-da-visibilidade";
 import { posicaoDeEntradaNaEtapa } from "@/lib/kanban/entrada-na-etapa";
+import { recusaSfyDoBanco } from "@/lib/sfy/regras";
 
 type SB = SupabaseClient;
 
@@ -261,6 +262,9 @@ function recusaDaGuardaDoBanco(
   ctx: HandlerCtx,
   erro: { code?: string; message?: string } | null,
 ): ApiError | null {
+  // sfy (Bloco A): travas da migration 5001 viram 403 de negócio.
+  const recusaSfy = recusaSfyDoBanco(erro, ctx.requestId, ctx.idioma);
+  if (recusaSfy) return recusaSfy;
   if (erro?.code === "PT404") {
     return new ApiError(
       404,
@@ -1545,6 +1549,8 @@ export async function moveLeadHandler(
     if (recusa) {
       throw new ApiError(422, recusa.codigo, undefined, ctx.requestId, recusa.mensagem);
     }
+    const recusaSfy = recusaSfyDoBanco(updErr, ctx.requestId, ctx.idioma);
+    if (recusaSfy) throw recusaSfy;
     throw new ApiError(500, "internal_error", undefined, ctx.requestId, updErr.message);
   }
   if (!updated) {

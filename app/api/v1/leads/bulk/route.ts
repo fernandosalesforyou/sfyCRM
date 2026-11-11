@@ -39,6 +39,11 @@ import { createClient } from "@/lib/supabase/server";
 import { observeServiceOrigin } from "@/lib/atendimento/origem";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { traduzir } from "@/lib/i18n/dicionario";
+import {
+  MENSAGEM_EXCLUSAO_SO_ADMIN,
+  recusaSfyDoBanco,
+  regraSfyDaOrganizacao,
+} from "@/lib/sfy/regras";
 
 export const dynamic = "force-dynamic";
 
@@ -319,6 +324,8 @@ export async function POST(req: NextRequest): Promise<Response> {
         if (recusaDoBanco) {
           return fail(recusaDoBanco.codigo, recusaDoBanco.mensagem, 422, { requestId });
         }
+        const recusaSfy = recusaSfyDoBanco(error, requestId, user.idioma);
+        if (recusaSfy) return fail(recusaSfy.code, recusaSfy.message, recusaSfy.status, { requestId });
         return fail("internal_error", error.message, 500, { requestId });
       }
       const movidosNoBanco = (data ?? []) as LeadMovidoEmLote[];
@@ -543,13 +550,25 @@ export async function POST(req: NextRequest): Promise<Response> {
       break;
     }
     case "delete": {
+      // sfy (Bloco A2): só o admin apaga quando a organização liga a regra. A
+      // trava real é o gatilho do banco (migration 5001); aqui só se recusa cedo.
+      if (
+        authz.org.role !== "admin" &&
+        (await regraSfyDaOrganizacao(supabase, organizationId, "exclusao_so_admin"))
+      ) {
+        return fail("sfy_delete_admin_only", t(MENSAGEM_EXCLUSAO_SO_ADMIN), 403, { requestId });
+      }
       // crm_leads has no `is_archived` column → real DELETE.
       const { data, error } = await supabase
         .from("crm_leads")
         .delete()
         .in("id", visibleIds)
         .select("id");
-      if (error) return fail("internal_error", error.message, 500, { requestId });
+      if (error) {
+        const recusaSfy = recusaSfyDoBanco(error, requestId, user.idioma);
+        if (recusaSfy) return fail(recusaSfy.code, recusaSfy.message, recusaSfy.status, { requestId });
+        return fail("internal_error", error.message, 500, { requestId });
+      }
       updatedCount = data?.length ?? 0;
       break;
     }

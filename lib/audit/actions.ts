@@ -1523,6 +1523,11 @@ export const AUDIT_ACTIONS = [
   // Reação enviada pelo inbox (#4194). Sem o emoji no metadata: a trilha guarda
   // o evento, não o conteúdo — mesma regra de message.edited/revoked.
   "message.reaction_sent",
+  // sfy (fork Sales for You, Bloco A): as regras de proteção da organização
+  // (`organizations.settings.sfy`), com antes/depois dos dois booleanos.
+  "sfy.org_rules_changed",
+  // sfy (Bloco A1): a permissão "ver todos os leads" de um membro, antes/depois.
+  "sfy.member_permission_changed",
 ] as const;
 
 /** Um código de auditoria. Derivado de `AUDIT_ACTIONS` — não redigite a lista. */

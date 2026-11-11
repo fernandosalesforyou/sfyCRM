@@ -13,6 +13,8 @@ import { ZonaDePerigoDaOrganizacao } from "./_danger-zone";
 import { InboxDaEmpresaForm } from "./_inbox";
 import { TenantForm } from "./_form";
 import { InterfaceDaEmpresaForm } from "./_interface";
+import { RegrasSfyDaOrganizacaoForm } from "./_sfy-regras";
+import { regraSfyLigada } from "@/lib/sfy/regras";
 import { camposDoNegocioDosFunis } from "@/lib/leads/compras-do-contato";
 import { capacidadesLigadas } from "@/lib/organizacao/capacidades";
 
@@ -119,6 +121,12 @@ export default async function TenantSettingsPage() {
         />
       )}
       {row && <InboxDaEmpresaForm initial={row.interface_settings} />}
+      {row && (
+        <RegrasSfyDaOrganizacaoForm
+          exclusaoSoAdmin={regraSfyLigada(row.settings, "exclusao_so_admin")}
+          valorDoGanhoSoAdmin={regraSfyLigada(row.settings, "valor_do_ganho_so_admin")}
+        />
+      )}
       {row && (
         <CatalogoDaEmpresaForm
           inicial={capacidadesLigadas(row.settings, []).includes("apresentacao_do_catalogo")}

@@ -34,6 +34,7 @@ import {
   validaCamposExigidos,
 } from "@/lib/leads/campos-exigidos";
 import { traduzir } from "@/lib/i18n/dicionario";
+import { recusaSfyDoBanco } from "@/lib/sfy/regras";
 
 export const dynamic = "force-dynamic";
 
@@ -249,6 +250,8 @@ export async function POST(
     // chegar aqui como 500 — que é o defeito, com outro nome.
     const recusa = recusaDeMotivoDaPerdaPeloBanco(updErr, user.idioma);
     if (recusa) return fail(recusa.codigo, recusa.mensagem, 422, { requestId });
+    const recusaSfy = recusaSfyDoBanco(updErr, requestId, user.idioma);
+    if (recusaSfy) return fail(recusaSfy.code, recusaSfy.message, recusaSfy.status, { requestId });
     return fail("internal_error", updErr.message, 500, { requestId });
   }
 

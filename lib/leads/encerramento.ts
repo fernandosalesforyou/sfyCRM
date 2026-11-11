@@ -38,6 +38,7 @@ import {
   razaoDaPerdaNaTimeline,
   recusaDeMotivoDaPerdaPeloBanco,
 } from "@/lib/leads/motivo-da-perda";
+import { recusaSfyDoBanco } from "@/lib/sfy/regras";
 
 /** Como a demanda terminou. Não há terceira: encerrar é ganhar ou perder. */
 export type DesfechoDaDemanda = "won" | "lost";
@@ -316,6 +317,8 @@ export async function encerraDemanda(
     if (recusa) {
       throw new ApiError(422, recusa.codigo, undefined, ctx.requestId, recusa.mensagem);
     }
+    const recusaSfy = recusaSfyDoBanco(updErr, ctx.requestId, ctx.idioma);
+    if (recusaSfy) throw recusaSfy;
     throw new ApiError(500, "internal_error", undefined, ctx.requestId, updErr.message);
   }
   if (input.travaOtimista && (alcancadas ?? []).length === 0) {
