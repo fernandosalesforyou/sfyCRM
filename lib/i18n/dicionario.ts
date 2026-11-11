@@ -916,6 +916,12 @@ export const DICIONARIO: Traducoes = {
   "Aplicar regras de proteção": {
     es: "Aplicar reglas de protección",
   },
+  "Permissão atualizada.": {
+    es: "Permiso actualizado.",
+  },
+  "Vê todos os leads": {
+    es: "Ve todos los leads",
+  },
   "Exigir o valor do negócio ao fechar como ganho": {
     es: "Exigir el valor del negocio al cerrar como ganado",
   },

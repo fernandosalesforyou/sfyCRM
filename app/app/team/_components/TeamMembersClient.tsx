@@ -10,6 +10,7 @@ import { useTeamMembers, type TeamMember } from "@/hooks/team/useTeamMembers";
 import { useChangeRole } from "@/hooks/team/useChangeRole";
 import { useReactivateMember } from "@/hooks/team/useReactivateMember";
 import { useRevokeMember } from "@/hooks/team/useRevokeMember";
+import { SfyVerTodosDoMembro } from "./SfyVerTodosDoMembro";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,6 +125,14 @@ export function TeamMembersClient({ currentUserId, canManage }: Props) {
                   ) : (
                     <Badge variant="secondary">{t(rotuloDoPapel(m.role))}</Badge>
                   )}
+                  {/* sfy (Bloco A1): permissão extra do Atendente, sem papel novo. */}
+                  {m.role === "agent" && !m.revoked_at ? (
+                    <SfyVerTodosDoMembro
+                      userId={m.user_id}
+                      rotulo={rotuloDoMembro(m, t)}
+                      podeEditar={canManage}
+                    />
+                  ) : null}
                 </TableCell>
                 <TableCell className="max-md:p-0">
                   {canManage ? (
