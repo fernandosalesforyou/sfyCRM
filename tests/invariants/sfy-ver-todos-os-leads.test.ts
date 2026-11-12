@@ -115,6 +115,29 @@ describe("sfy 5002 — ver todos os leads", () => {
     expect(sql(`select owner_user_id from public.crm_leads where id = '${leadSup1[orgA]}';`)).toBe(sup1);
   });
 
+  it("a tabela de permissões isola por organização: membro lê a da própria, zero da vizinha", () => {
+    const soB = randomUUID();
+    sql(`insert into auth.users (id, email) values ('${soB}', 'sfy-so-b-${soB.slice(0, 8)}@invariant.test');
+      insert into public.user_organizations (user_id, organization_id, role, accepted_at)
+        values ('${soB}', '${orgB}', 'agent', now());`);
+    const contaPermissoes = `select count(*) from public.sfy_permissoes_do_membro where organization_id = '${orgA}';`;
+    expect(countAs(sup1, contaPermissoes)).toBe(1);
+    expect(countAs(soB, contaPermissoes)).toBe(0);
+    expect(countAs(soB, `select count(*) from public.sfy_permissoes_do_membro;`)).toBe(0);
+  });
+
+  it("as funções sfy não são chamáveis direto pela sessão (só por dentro do banco)", () => {
+    for (const fn of [
+      "fn_sfy_regra_ligada(uuid, text)",
+      "fn_sfy_pode_excluir(uuid)",
+      "fn_sfy_ve_todos_os_leads(uuid)",
+      "fn_sfy_guarda_exclusao()",
+      "fn_sfy_guarda_valor_do_ganho()",
+    ]) {
+      expect(sql(`select has_function_privilege('authenticated', 'public.${fn}', 'EXECUTE');`)).toBe("f");
+    }
+  });
+
   it("ninguém se dá a permissão pela API: a tabela não aceita escrita da sessão", () => {
     const antes = countAs(sup1, contaLeads(orgA));
     expect(() =>

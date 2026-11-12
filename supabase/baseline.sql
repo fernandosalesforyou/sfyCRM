@@ -73976,6 +73976,40 @@ do $f$ begin perform public.fn_aplicar_travas_de_suporte(); end $f$;
 
 notify pgrst, 'reload schema';
 
+-- ---- sfy: funções sfy só por dentro do banco (migration 5003) ----
+-- 5003 — as funções sfy só por dentro do banco.
+
+create or replace function public.fn_sfy_ve_todos_os_leads(p_org uuid)
+returns boolean
+language sql stable security definer
+set search_path = public
+as $$
+  select p_org in (select public.fn_user_org_ids())
+     and exists (
+       select 1 from public.sfy_permissoes_do_membro p
+        where p.organization_id = p_org
+          and p.user_id = auth.uid()
+          and p.ver_todos_os_leads
+     );
+$$;
+
+revoke all on function public.fn_sfy_regra_ligada(uuid, text) from public, anon, authenticated;
+grant execute on function public.fn_sfy_regra_ligada(uuid, text) to service_role;
+
+revoke all on function public.fn_sfy_pode_excluir(uuid) from public, anon, authenticated;
+grant execute on function public.fn_sfy_pode_excluir(uuid) to service_role;
+
+revoke all on function public.fn_sfy_ve_todos_os_leads(uuid) from public, anon, authenticated;
+grant execute on function public.fn_sfy_ve_todos_os_leads(uuid) to service_role;
+
+revoke all on function public.fn_sfy_guarda_exclusao() from public, anon, authenticated;
+grant execute on function public.fn_sfy_guarda_exclusao() to service_role;
+
+revoke all on function public.fn_sfy_guarda_valor_do_ganho() from public, anon, authenticated;
+grant execute on function public.fn_sfy_guarda_valor_do_ganho() to service_role;
+
+notify pgrst, 'reload schema';
+
 -- ---- VARREDURA anon: função nova nasce exposta em quem ATUALIZA (migration 0116) ----
 --
 -- ⚠️ DE PROPÓSITO, NENHUMA FUNÇÃO É CRIADA DEPOIS DESTE BLOCO. Apêndice que cria

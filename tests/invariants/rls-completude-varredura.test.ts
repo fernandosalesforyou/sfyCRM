@@ -79,6 +79,7 @@ interface Excecao {
  * linhas da OUTRA organização, não uma leitura como superusuário.
  */
 const PROVA_PROPRIA: readonly Excecao[] = [
+  { tabela: "sfy_permissoes_do_membro", razao: "tests/invariants/sfy-ver-todos-os-leads.test.ts (fork sfy, migrations 5002/5003) — duas organizações por JWT authenticated: membro lê a permissão da própria organização e ZERO da vizinha; INSERT direto da sessão recusado (escrita só pelo servidor, rota admin)." },
   { tabela: "catalog_product_presentations", razao: "tests/invariants/catalogo-apresentacoes-isolamento.test.ts — duas organizações por JWT authenticated: manager nos dois sentidos e agent leem apenas a própria apresentação; UPDATE local de manager positivo, agent e manager vizinho sem efeito; CHECK de ownership do áudio com controle positivo e negativo." },
   {
     tabela: "ouvidoria_manifestacoes",
