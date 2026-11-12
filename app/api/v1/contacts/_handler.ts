@@ -1041,6 +1041,9 @@ export async function patchContactHandler(
     // dado; qualquer outro conflito segue no 500 de sempre.
     const conflito = await erroDeConflitoUnico(supabase, ctx, patch, updErr, contactId);
     if (conflito) throw conflito;
+    // sfy (Bloco B1): a trava de origem do banco (migration 5004) vira 403 de negócio.
+    const recusaSfy = recusaSfyDoBanco(updErr, ctx.requestId, ctx.idioma);
+    if (recusaSfy) throw recusaSfy;
     throw new ApiError(500, "internal_error", undefined, ctx.requestId, updErr.message);
   }
   if (!updated) {

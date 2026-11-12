@@ -487,7 +487,11 @@ export function ContactDetailClient({ contactId, paineisDeModulo = [], acessosMc
               <div>
                 <dt className="text-xs uppercase text-muted-foreground">{t("Origem")}</dt>
                 <dd className="mt-1">
-                  {origem.origem === ORIGEM_AGENDA_DO_CELULAR ? t("Agenda do celular") : origem.origem}
+                  {origem.origem === ORIGEM_AGENDA_DO_CELULAR
+                    ? t("Agenda do celular")
+                    : origem.origem === "sem_identificacao"
+                      ? t("Sem identificação")
+                      : origem.origem}
                 </dd>
                 {origem.inferidaPorHorario && (
                   <dd className="mt-1 text-sm text-muted-foreground">

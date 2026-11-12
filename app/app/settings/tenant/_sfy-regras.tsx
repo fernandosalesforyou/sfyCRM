@@ -17,17 +17,29 @@ interface Props {
   /** Só as duas chaves: o resto de `settings` não vai para o navegador. */
   exclusaoSoAdmin: boolean;
   valorDoGanhoSoAdmin: boolean;
+  origemProtegida: boolean;
+  origemManualSemIdentificacao: boolean;
 }
 
-export function RegrasSfyDaOrganizacaoForm({ exclusaoSoAdmin, valorDoGanhoSoAdmin }: Props) {
+export function RegrasSfyDaOrganizacaoForm({
+  exclusaoSoAdmin,
+  valorDoGanhoSoAdmin,
+  origemProtegida,
+  origemManualSemIdentificacao,
+}: Props) {
   const t = useT();
   const [exclusao, setExclusao] = useState(exclusaoSoAdmin);
   const [ganho, setGanho] = useState(valorDoGanhoSoAdmin);
+  const [origem, setOrigem] = useState(origemProtegida);
+  const [semId, setSemId] = useState(origemManualSemIdentificacao);
   const [isPending, startTransition] = useTransition();
 
   function salvar() {
     startTransition(async () => {
-      const r = await atualizarRegrasSfy({ exclusao_so_admin: exclusao, valor_do_ganho_so_admin: ganho });
+      const r = await atualizarRegrasSfy({ exclusao_so_admin: exclusao, valor_do_ganho_so_admin: ganho,
+        origem_protegida: origem,
+        origem_manual_sem_identificacao: semId,
+      });
       if (r.ok) {
         toast.success(t("Regras de proteção salvas."));
         return;
@@ -50,6 +62,14 @@ export function RegrasSfyDaOrganizacaoForm({ exclusaoSoAdmin, valorDoGanhoSoAdmi
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1" checked={ganho} onChange={(e) => setGanho(e.target.checked)} />
         <span>{t("Só o administrador altera o valor ou reabre um negócio ganho")}</span>
+      </label>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={origem} onChange={(e) => setOrigem(e.target.checked)} />
+        <span>{t("Só o administrador altera a origem de contatos e negócios vindos de anúncio, site ou integração")}</span>
+      </label>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={semId} onChange={(e) => setSemId(e.target.checked)} />
+        <span>{t("Cadastro manual entra com a origem \"Sem identificação\"")}</span>
       </label>
       <Button type="button" size="sm" disabled={isPending} onClick={salvar}>
         {t("Aplicar regras de proteção")}

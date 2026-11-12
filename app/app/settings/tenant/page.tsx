@@ -125,6 +125,8 @@ export default async function TenantSettingsPage() {
         <RegrasSfyDaOrganizacaoForm
           exclusaoSoAdmin={regraSfyLigada(row.settings, "exclusao_so_admin")}
           valorDoGanhoSoAdmin={regraSfyLigada(row.settings, "valor_do_ganho_so_admin")}
+          origemProtegida={regraSfyLigada(row.settings, "origem_protegida")}
+          origemManualSemIdentificacao={regraSfyLigada(row.settings, "origem_manual_sem_identificacao")}
         />
       )}
       {row && (

@@ -39,6 +39,7 @@ import type { ContactOrderBy } from "@/lib/schemas/contacts";
 const SOURCE_OPTIONS = [
   { value: undefined, label: "Todas as origens" },
   { value: "manual", label: "Manual" },
+  { value: "sem_identificacao", label: "Sem identificação" },
   { value: "whatsapp", label: "WhatsApp" },
   { value: "site", label: "Site (landing page)" },
   { value: "nuvemshop", label: "Nuvemshop" },

@@ -913,6 +913,18 @@ export const DICIONARIO: Traducoes = {
   "Só o administrador altera o valor ou reabre um negócio ganho": {
     es: "Solo el administrador cambia el valor o reabre un negocio ganado",
   },
+  "Só o administrador pode alterar a origem de um contato ou negócio que veio de anúncio, site ou integração.": {
+    es: "Solo el administrador puede cambiar el origen de un contacto o negocio que vino de anuncio, sitio o integración.",
+  },
+  "Só o administrador altera a origem de contatos e negócios vindos de anúncio, site ou integração": {
+    es: "Solo el administrador cambia el origen de contactos y negocios que vienen de anuncio, sitio o integración",
+  },
+  "Cadastro manual entra com a origem \"Sem identificação\"": {
+    es: "Registro manual entra con el origen \"Sin identificación\"",
+  },
+  "Sem identificação": {
+    es: "Sin identificación",
+  },
   "Aplicar regras de proteção": {
     es: "Aplicar reglas de protección",
   },

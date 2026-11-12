@@ -48,6 +48,8 @@ function rotuloDaOrigem(source: string, t: (texto: string) => string): string {
   switch (source) {
     case "manual":
       return t("Manual");
+    case "sem_identificacao":
+      return t("Sem identificação");
     case "whatsapp":
       return "WhatsApp";
     case "site":

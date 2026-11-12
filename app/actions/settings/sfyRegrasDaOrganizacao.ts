@@ -25,6 +25,8 @@ const regrasSchema = z
   .object({
     exclusao_so_admin: z.boolean(),
     valor_do_ganho_so_admin: z.boolean(),
+    origem_protegida: z.boolean(),
+    origem_manual_sem_identificacao: z.boolean(),
   })
   .strict();
 
@@ -79,6 +81,8 @@ export async function atualizarRegrasSfy(input: RegrasSfyInput): Promise<RegrasS
       antes: {
         exclusao_so_admin: sfyAnterior.exclusao_so_admin === true,
         valor_do_ganho_so_admin: sfyAnterior.valor_do_ganho_so_admin === true,
+        origem_protegida: sfyAnterior.origem_protegida === true,
+        origem_manual_sem_identificacao: sfyAnterior.origem_manual_sem_identificacao === true,
       },
       depois: entrada.data,
     },

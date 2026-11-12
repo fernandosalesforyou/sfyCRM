@@ -15,12 +15,20 @@ import { ApiError } from "@/lib/api/types";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { IDIOMA_PADRAO, type Idioma } from "@/lib/i18n/idiomas";
 
-export const REGRAS_SFY = ["exclusao_so_admin", "valor_do_ganho_so_admin"] as const;
+export const REGRAS_SFY = [
+  "exclusao_so_admin",
+  "valor_do_ganho_so_admin",
+  "origem_protegida",
+  "origem_manual_sem_identificacao",
+] as const;
 export type RegraSfy = (typeof REGRAS_SFY)[number];
 
 export const MENSAGEM_EXCLUSAO_SO_ADMIN = "Só o administrador pode excluir negócios e contatos.";
 export const MENSAGEM_GANHO_SO_ADMIN =
   "Só o administrador pode alterar o valor ou reabrir um negócio ganho.";
+
+export const MENSAGEM_ORIGEM_SO_ADMIN =
+  "Só o administrador pode alterar a origem de um contato ou negócio que veio de anúncio, site ou integração.";
 
 /** Leitura pura de `organizations.settings`. */
 export function regraSfyLigada(settings: unknown, regra: RegraSfy): boolean {
@@ -59,6 +67,10 @@ export function ehRecusaSfyDoGanho(erro: ErroDoBanco): boolean {
   return erro?.code === "42501" && (erro.message?.includes("sfy_won_value_admin_only") ?? false);
 }
 
+export function ehRecusaSfyDaOrigem(erro: ErroDoBanco): boolean {
+  return erro?.code === "42501" && (erro.message?.includes("sfy_origin_admin_only") ?? false);
+}
+
 /** O erro do banco vira 403 de negócio; `null` quando não é uma trava sfy. */
 export function recusaSfyDoBanco(
   erro: ErroDoBanco,
@@ -82,6 +94,15 @@ export function recusaSfyDoBanco(
       undefined,
       requestId,
       traduzir(MENSAGEM_GANHO_SO_ADMIN, lingua),
+    );
+  }
+  if (ehRecusaSfyDaOrigem(erro)) {
+    return new ApiError(
+      403,
+      "sfy_origin_admin_only",
+      undefined,
+      requestId,
+      traduzir(MENSAGEM_ORIGEM_SO_ADMIN, lingua),
     );
   }
   return null;
