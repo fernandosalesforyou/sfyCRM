@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 type Props = { params: Promise<{ token: string }> };
 
 const campo =
-  "mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-base text-neutral-900 focus:border-neutral-900 focus:outline-none";
+  "mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-base text-neutral-900 focus:border-neutral-900 focus:outline-hidden";
 
 function Pergunta({ field, t }: { field: WebhookFormField; t: (texto: string) => string }) {
   const id = `f-${field.key}`;
