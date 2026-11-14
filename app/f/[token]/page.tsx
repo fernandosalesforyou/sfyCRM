@@ -15,6 +15,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { traduzir } from "@/lib/i18n/dicionario";
+import { idiomaDoVisitante } from "@/lib/i18n/idiomaAnonimo";
 import { webhookFormFieldsSchema, type WebhookFormField } from "@/lib/webhooks/formulario";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +30,7 @@ type Props = { params: Promise<{ token: string }> };
 const campo =
   "mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-base text-neutral-900 focus:border-neutral-900 focus:outline-none";
 
-function Pergunta({ field }: { field: WebhookFormField }) {
+function Pergunta({ field, t }: { field: WebhookFormField; t: (texto: string) => string }) {
   const id = `f-${field.key}`;
   const rotulo = (
     <>
@@ -56,7 +58,7 @@ function Pergunta({ field }: { field: WebhookFormField }) {
         <textarea id={id} name={field.key} rows={4} required={field.required} className={campo} />
       ) : field.type === "select" ? (
         <select id={id} name={field.key} required={field.required} defaultValue="" className={campo}>
-          <option value="">Selecione</option>
+          <option value="">{t("Selecione")}</option>
           {(field.options ?? []).map((o) => (
             <option key={o} value={o}>
               {o}
@@ -79,6 +81,8 @@ function Pergunta({ field }: { field: WebhookFormField }) {
 
 export default async function FormularioPublico({ params }: Props) {
   const { token } = await params;
+  const idioma = await idiomaDoVisitante(null);
+  const t = (texto: string) => traduzir(texto, idioma);
   const admin = createAdminClient();
   const { data: fonte } = await admin
     .from("webhook_sources")
@@ -105,30 +109,30 @@ export default async function FormularioPublico({ params }: Props) {
         <form action={`/api/v1/webhooks/in/${token}`} method="POST" className="mt-6 space-y-4">
           <div>
             <label htmlFor="f-nome" className="block text-sm font-medium text-neutral-800">
-              Nome completo <span aria-hidden>*</span>
+              {t("Nome completo")} <span aria-hidden>*</span>
             </label>
             <input id="f-nome" name="nome" type="text" required autoComplete="name" className={campo} />
           </div>
           <div>
             <label htmlFor="f-telefone" className="block text-sm font-medium text-neutral-800">
-              WhatsApp com DDD <span aria-hidden>*</span>
+              {t("WhatsApp com DDD")} <span aria-hidden>*</span>
             </label>
             <input id="f-telefone" name="telefone" type="tel" required autoComplete="tel" className={campo} />
           </div>
           <div>
             <label htmlFor="f-email" className="block text-sm font-medium text-neutral-800">
-              E-mail
+              {t("E-mail")}
             </label>
             <input id="f-email" name="email" type="email" autoComplete="email" className={campo} />
           </div>
           {perguntas.map((p) => (
-            <Pergunta key={p.key} field={p} />
+            <Pergunta key={p.key} field={p} t={t} />
           ))}
           <button
             type="submit"
             className="w-full rounded-md bg-neutral-900 px-4 py-3 text-base font-medium text-white hover:bg-neutral-700"
           >
-            Enviar
+            {t("Enviar")}
           </button>
         </form>
       </div>

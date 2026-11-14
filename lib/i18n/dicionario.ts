@@ -2260,6 +2260,13 @@ export const DICIONARIO: Traducoes = {
     es: "Escribe una nota interna… (solo la ve el equipo)",
   },
   Enviar: { es: "Enviar" },
+  // sfy (Climabrisa): formulário público hospedado (`app/f/[token]`).
+  "WhatsApp com DDD": { es: "WhatsApp con código de área" },
+  Selecione: { es: "Seleccione" },
+  "Recebemos o seu cadastro": { es: "Recibimos tu registro" },
+  "Obrigado! A nossa equipe analisará as informações e entrará em contato.": {
+    es: "¡Gracias! Nuestro equipo analizará la información y se pondrá en contacto.",
+  },
   "Enviar modelo": { es: "Enviar plantilla" },
   "Escolha um modelo aprovado…": { es: "Elige una plantilla aprobada…" },
 
