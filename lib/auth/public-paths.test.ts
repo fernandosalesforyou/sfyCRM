@@ -127,4 +127,14 @@ describe("isPublicPath", () => {
   it("e não libera nenhum sub-path dela de carona", () => {
     expect(isPublicPath("/account-suspended/qualquer")).toBe(false);
   });
+
+  it("sfy: libera o formulário público /f/<token> e o agradecimento, e nada além", () => {
+    const t = "a1b2c3d4e5f60718293a4b5c6d7e8f90";
+    expect(isPublicPath(`/f/${t}`)).toBe(true);
+    expect(isPublicPath(`/f/${t}/obrigado`)).toBe(true);
+    expect(isPublicPath(`/f/${t}/outra`)).toBe(false);
+    expect(isPublicPath("/f/curto")).toBe(false);
+    expect(isPublicPath("/f")).toBe(false);
+    expect(isPublicPath(`/f/${t}/obrigado/x`)).toBe(false);
+  });
 });

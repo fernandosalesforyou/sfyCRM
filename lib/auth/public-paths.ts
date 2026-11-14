@@ -42,6 +42,10 @@ export const PUBLIC_PATHS: RegExp[] = [
   /^\/500$/,
   /^\/503$/,
   /^\/api\/v1\/health$/,
+  // sfy (Climabrisa): formulário público hospedado pelo CRM (`app/f/[token]`) e
+  // a página de agradecimento. O token é o `path_token` da fonte de webhook
+  // (hex/uuid, sem sessão); âncoras com `$` para nenhum sub-path nascer público.
+  /^\/f\/[A-Za-z0-9_-]{16,128}(\/obrigado)?$/,
   /^\/api\/v1\/webhooks\//,
   /^\/api\/v1\/cron\//,
   // Landing page de captura de clique do Google Ads (migration 0306). Quem
