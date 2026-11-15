@@ -80,6 +80,8 @@ export const ALVO_DE_FUNIL: Record<string, AlvoDeFunil> = {
   // Cria o negócio NOVO no MESMO funil da origem (issue #1538): o `stage_id`
   // opcional é recusado se for de outro funil, então o alvo é o funil do lead.
   crm_retomar_lead: "funil_vem_do_lead",
+  // sfy (Bloco C): recebe `lead_id`; o funil sai do negócio informado.
+  crm_distribuir_lead: "funil_vem_do_lead",
 
   // ---- tocam o lead de lado: RETORNO INTERNO, não estado do card ----
   // ⚠️ Este comentário dizia "agenda", e a palavra passou a apontar para a coisa

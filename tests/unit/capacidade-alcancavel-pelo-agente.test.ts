@@ -82,6 +82,8 @@ const ESCRITA_QUE_E_TRABALHO_DE_ATENDENTE: ReadonlyArray<string> = [
   "crm_propose_lead_fields_from_document",
   // `app/api/v1/leads/[id]/move/` — exige `agent`. Mover card é o trabalho do dia.
   "crm_move_lead_stage",
+  // sfy (Bloco C): distribuir = preencher campos (PATCH, `agent`) + mover o card (`agent`).
+  "crm_distribuir_lead",
   // `app/api/v1/messages/` — exige `agent`. Responder cliente é o trabalho do dia.
   "crm_send_whatsapp_message",
   // `app/api/v1/ai/cases/[id]/reply/` — POST exige `agent`. Registrar no chamado

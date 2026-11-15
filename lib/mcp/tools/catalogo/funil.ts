@@ -89,6 +89,19 @@ export const TOOLS_FUNIL = declararTools([
     pacotes: ["vender"],
   },
   {
+    // sfy (Bloco C): a IA informa categoria, cidade e UF; o CRM escolhe parceiro e supervisor.
+    name: "crm_distribuir_lead",
+    category: "write",
+    rotulo: "Encaminhar ao parceiro ou supervisor da cidade",
+    explicacao:
+      "Escolhe o parceiro ou o supervisor responsável pela cidade do cliente (com rodízio quando há mais de um parceiro), preenche os campos do negócio e o leva para a etapa certa do funil.",
+    oQueToca: "Funil de vendas",
+    risco: "atencao",
+    // "organizar" (distribuição de trabalho), e não "vender": em "vender" ela entraria no agente
+    // que nasce no onboarding e estouraria o teto dos outros pacotes (pacote-reserva-vaga-da-critica).
+    pacotes: ["organizar"],
+  },
+  {
     name: "crm_retomar_lead",
     category: "write",
     rotulo: "Retomar negócio encerrado como novo",

@@ -91,6 +91,8 @@ export const ESCOPO_DAS_ESCRITAS: Readonly<Record<string, Readonly<Record<string
   },
   crm_move_lead_stage: { lead_id: "negocio", to_stage_id: "configuracao" },
   crm_retomar_lead: { lead_id: "negocio", stage_id: "configuracao" },
+  // sfy (Bloco C): só o negócio da conversa; categoria, cidade e UF são dados do cliente.
+  crm_distribuir_lead: { lead_id: "negocio" },
   crm_close_demand: { lead_id: "negocio" },
   crm_propose_reactivation: { lead_id: "negocio" },
   crm_draft_proposal: { lead_id: "negocio", conversation_id: "conversa" },
