@@ -19,6 +19,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { updateLeadHandler, moveLeadHandler } from "@/app/api/v1/leads/_handler";
 import { camposDoFunil } from "@/lib/leads/campos-do-funil";
 import type { CustomFieldDef } from "@/lib/schemas/settings";
+import { avisarDaDistribuicao, type ResumoDosAvisos } from "@/lib/sfy/avisos";
 
 export type MotivoDoDestino =
   | "agro_por_uf"
@@ -54,6 +55,10 @@ export interface ResultadoDaDistribuicao {
   supervisor?: string | null;
   dono_definido?: boolean;
   campos_nao_gravados?: string[];
+  /** Resumo dos avisos ao parceiro e ao supervisor (nada sai com a regra desligada). */
+  avisos?: ResumoDosAvisos;
+  /** Texto com os dados do supervisor para a IA entregar ao cliente (nunca os do parceiro). */
+  texto_para_o_cliente?: string | null;
   destino?: DestinoEscolhido;
 }
 
@@ -183,6 +188,26 @@ export async function distribuirNegocio(
     naoGravados.push("Etapa de destino");
   }
 
+  // Avisos: melhor esforço. Falha aqui NÃO desfaz a distribuição; volta no resumo.
+  let avisos: ResumoDosAvisos | undefined;
+  let textoParaOCliente: string | null = null;
+  try {
+    const categoria = entrada.categoria === "agro" ? "agro" : "climabrisa";
+    const r = await avisarDaDistribuicao(supabase, {
+      organization_id: ctx.organization_id,
+      lead_id: entrada.lead_id,
+      categoria,
+      cidade: entrada.cidade,
+      uf: entrada.uf,
+      destino,
+    });
+    const { texto_para_o_cliente, ...resumo } = r;
+    avisos = resumo;
+    textoParaOCliente = texto_para_o_cliente;
+  } catch {
+    avisos = { enviados: [], falhas: ["avisos"], pulados: [] };
+  }
+
   return {
     distribuido: true,
     motivo: destino.motivo,
@@ -191,6 +216,8 @@ export async function distribuirNegocio(
     supervisor: destino.supervisor_nome ?? null,
     dono_definido: donoDefinido,
     ...(naoGravados.length ? { campos_nao_gravados: naoGravados } : {}),
+    avisos,
+    texto_para_o_cliente: textoParaOCliente,
     destino,
   };
 }
