@@ -19667,6 +19667,25 @@ export const DICIONARIO: Traducoes = {
   "sem sinais positivos": { es: "sin señales positivas" },
   "verificação pendente": { es: "verificación pendiente" },
 
+  // ═══ sfy Bloco D: relatórios ═══
+  "% de fechamento": { es: "% de cierre" },
+  "Incluir histórico importado": { es: "Incluir historial importado" },
+  "Leads por período e categoria": { es: "Leads por período y categoría" },
+  "Maior % de fechamento": { es: "Mayor % de cierre" },
+  "Mais ganhos": { es: "Más ganados" },
+  "Mais negócios": { es: "Más negocios" },
+  "Mediana de dias até ganhar": { es: "Mediana de días hasta ganar" },
+  "Negócios criados no período": { es: "Negocios creados en el período" },
+  "O funil ainda não tem o campo deste agrupamento: todos os negócios aparecem juntos.": { es: "El embudo aún no tiene el campo de esta agrupación: todos los negocios aparecen juntos." },
+  "Parceiro": { es: "Socio" },
+  "Por origem": { es: "Por origen" },
+  "Por parceiro": { es: "Por socio" },
+  "Por supervisor": { es: "Por supervisor" },
+  "Relatório": { es: "Informe" },
+  "Relatórios da operação": { es: "Informes de la operación" },
+  "Sem parceiro": { es: "Sin socio" },
+  "Valor fechado": { es: "Valor cerrado" },
+
   // ═══ sfy Bloco C: Parceiros e supervisores (distribuição) ═══
   "Parceiros e supervisores": { es: "Socios y supervisores" },
   "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.": { es: "Contactos de quien recibe los clientes derivados y a quién responde cada socio." },

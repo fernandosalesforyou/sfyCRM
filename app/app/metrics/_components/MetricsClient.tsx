@@ -13,6 +13,7 @@ import { CanaisPanel } from "./CanaisPanel";
 import { MetaDoMesPanel, type EstadoDaMeta } from "./MetaDoMesPanel";
 import { PerdasPanel } from "./PerdasPanel";
 import { PrevisaoPanel } from "./PrevisaoPanel";
+import { RelatoriosSfyPanel } from "./RelatoriosSfyPanel";
 import { SeriePanel } from "./SeriePanel";
 import { useMetasDoMes } from "@/hooks/metrics/useMetasDoMes";
 import { janelaDoMes, mesLocal } from "@/lib/metas/periodo";
@@ -163,6 +164,9 @@ export function MetricsClient({ canCompare, currentUserId }: Props) {
       {/* Relatório "Perdas" (#1537): manager+, porque é o funil inteiro — o
           mesmo critério do /metrics para quem compara. */}
       {canCompare ? <PerdasPanel /> : null}
+
+      {/* sfy (Bloco D): por parceiro, supervisor, período e origem. manager+. */}
+      {canCompare ? <RelatoriosSfyPanel /> : null}
 
       {/* Previsão ponderada do funil (issue #1535): por mês × moeda, com os
           baldes "sem data" e "sem probabilidade" à parte. Depois do atrito de
