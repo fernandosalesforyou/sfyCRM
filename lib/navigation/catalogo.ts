@@ -922,6 +922,17 @@ export const NAV_CATALOG = [
     sidebar: true,
   },
   {
+    // sfy (Bloco C): para quem o CRM encaminha cada cliente. Configuração de empresa, sem
+    // `sidebar`: o cadastro se mexe de vez em quando. Gerente vê; só admin edita (a rota confere).
+    href: "/app/settings/parceiros",
+    label: "Parceiros e supervisores",
+    description: "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.",
+    icon: "Users",
+    group: "organizacao",
+    section: "Sua empresa",
+    minRole: "manager",
+  },
+  {
     // ── A porta do ALVO (#3025, fatia 1) ────────────────────────────────────
     //
     // Mora aqui, ao lado de Desempenho, porque é a metade que faltava da MESMA

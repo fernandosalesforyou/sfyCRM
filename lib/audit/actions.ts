@@ -1528,6 +1528,8 @@ export const AUDIT_ACTIONS = [
   "sfy.org_rules_changed",
   // sfy (Bloco A1): a permissão "ver todos os leads" de um membro, antes/depois.
   "sfy.member_permission_changed",
+  // sfy (Bloco C): contato, supervisor ou "ativo" de um parceiro/supervisor da distribuição.
+  "sfy.distribuicao_cadastro_changed",
 ] as const;
 
 /** Um código de auditoria. Derivado de `AUDIT_ACTIONS` — não redigite a lista. */

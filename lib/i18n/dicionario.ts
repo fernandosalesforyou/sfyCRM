@@ -19667,6 +19667,30 @@ export const DICIONARIO: Traducoes = {
   "sem sinais positivos": { es: "sin señales positivas" },
   "verificação pendente": { es: "verificación pendiente" },
 
+  // ═══ sfy Bloco C: Parceiros e supervisores (distribuição) ═══
+  "Parceiros e supervisores": { es: "Socios y supervisores" },
+  "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.": { es: "Contactos de quien recibe los clientes derivados y a quién responde cada socio." },
+  "Para quem o CRM encaminha cada cliente. Parceiro sem WhatsApp e sem e-mail fica fora do rodízio até ter um contato. Desmarcar \"Ativo\" tira o parceiro do rodízio sem apagar o cadastro.": { es: "A quién deriva el CRM a cada cliente. Un socio sin WhatsApp ni correo queda fuera de la rotación hasta tener un contacto. Desmarcar \"Activo\" saca al socio de la rotación sin borrar el registro." },
+  "Cadastro atualizado.": { es: "Registro actualizado." },
+  "Supervisores": { es: "Supervisores" },
+  "Usuário no CRM": { es: "Usuario en el CRM" },
+  "Agro: demais estados": { es: "Agro: demás estados" },
+  "Agro": { es: "Agro" },
+  "Climabrisa": { es: "Climabrisa" },
+  "Ainda não ligado": { es: "Aún sin vincular" },
+  "Parceiros": { es: "Socios" },
+  "parceiros": { es: "socios" },
+  "sem nenhum contato": { es: "sin ningún contacto" },
+  "Buscar por código ou nome": { es: "Buscar por código o nombre" },
+  "Só sem contato": { es: "Solo sin contacto" },
+  "Cidades": { es: "Ciudades" },
+  "Supervisor": { es: "Supervisor" },
+  "Sem supervisor": { es: "Sin supervisor" },
+  "WhatsApp inválido. Use DDD + número.": { es: "WhatsApp inválido. Usa código de área + número." },
+  "E-mail inválido.": { es: "Correo electrónico inválido." },
+  "Supervisor não encontrado.": { es: "Supervisor no encontrado." },
+  "Cadastro não encontrado.": { es: "Registro no encontrado." },
+
   // ═══ Meta de vendas e progresso no Desempenho (#3025, fatia 1) ═══
   //
   // A tela que passou a ter DENOMINADOR: antes só existia o realizado, e sem
