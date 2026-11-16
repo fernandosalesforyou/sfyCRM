@@ -20,9 +20,11 @@ import {
   baldesDaJanela,
   chavesDoCampo,
   juntarPorGrupo,
+  montarCusto,
   montarSerie,
   rotulosDasOpcoes,
   somarLinhas,
+  type LinhaDeCustoBruta,
   type LinhaDestinoBruta,
   type LinhaPeriodoBruta,
 } from "@/lib/sfy/relatorios";
@@ -33,7 +35,7 @@ export const dynamic = "force-dynamic";
 
 const dia = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const querySchema = z.object({
-  tipo: z.enum(["destino", "periodo", "origem"]),
+  tipo: z.enum(["destino", "periodo", "origem", "custo"]),
   agrupar: z.enum(["parceiro", "supervisor"]).optional(),
   granularidade: z.enum(["dia", "semana", "mes"]).optional(),
   de: dia.optional(),
@@ -80,6 +82,15 @@ export async function GET(req: NextRequest): Promise<Response> {
   const pAte = instanteDe(partes(ateExclusivo), fuso).toISOString();
   const historico = q.historico === "1";
   const janela = { de, ate };
+
+  if (q.tipo === "custo") {
+    const { data, error } = await supabase.rpc("fn_sfy_custo_por_campanha", {
+      p_org: orgId, p_de: pDe, p_ate: pAte, p_dia_de: de, p_dia_ate: ate,
+      p_prefixo_etapa: "Em negociação", p_incluir_historico: historico,
+    });
+    if (error) return fail("internal_error", error.message, 500, { requestId });
+    return ok({ janela, historico, ...montarCusto((data ?? []) as LinhaDeCustoBruta[]) }, { requestId });
+  }
 
   if (q.tipo === "origem") {
     const { data, error } = await supabase.rpc("fn_sfy_relatorio_por_origem", {

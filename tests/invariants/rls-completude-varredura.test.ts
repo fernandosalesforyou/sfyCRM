@@ -80,6 +80,7 @@ interface Excecao {
  */
 const PROVA_PROPRIA: readonly Excecao[] = [
   ...["sfy_supervisores", "sfy_parceiros", "sfy_parceiro_cidades", "sfy_cidade_supervisor"].map(tabela => ({ tabela, razao: "tests/invariants/sfy-distribuicao.test.ts (fork sfy, migration 5005) — duas organizações por JWT authenticated: membro lê as linhas da própria organização e ZERO da vizinha; INSERT direto da sessão recusado (escrita só pelo servidor)." })),
+  { tabela: "sfy_gasto_anuncio", razao: "tests/invariants/sfy-gasto-de-anuncio.test.ts (fork sfy, migration 5007) — JWT authenticated de membro: SELECT e INSERT direto recusados (a tabela e a função de custo são só do servidor); o cruzamento por organização é provado com duas organizações na função." },
   { tabela: "sfy_permissoes_do_membro", razao: "tests/invariants/sfy-ver-todos-os-leads.test.ts (fork sfy, migrations 5002/5003) — duas organizações por JWT authenticated: membro lê a permissão da própria organização e ZERO da vizinha; INSERT direto da sessão recusado (escrita só pelo servidor, rota admin)." },
   { tabela: "catalog_product_presentations", razao: "tests/invariants/catalogo-apresentacoes-isolamento.test.ts — duas organizações por JWT authenticated: manager nos dois sentidos e agent leem apenas a própria apresentação; UPDATE local de manager positivo, agent e manager vizinho sem efeito; CHECK de ownership do áudio com controle positivo e negativo." },
   {

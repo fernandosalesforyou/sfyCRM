@@ -477,3 +477,37 @@ export async function lerInsights(
   if (!repetida.ok) return repetida;
   return { ...repetida, aviso: AVISO_DO_CONNECT_RATE_AUSENTE };
 }
+
+
+/** Uma linha do gasto DIÁRIO por campanha (sfy, Bloco D). */
+export interface LinhaDeGastoDiarioCrua {
+  campaign_id?: string;
+  campaign_name?: string;
+  spend?: string;
+  impressions?: string;
+  inline_link_clicks?: string;
+  account_currency?: string;
+  /** `AAAA-MM-DD`, o dia da linha (com `time_increment=1`). */
+  date_start?: string;
+}
+
+/**
+ * O gasto por campanha, UMA LINHA POR DIA (`time_increment=1`), para o Bloco D guardar o dia e
+ * não precisar reler a plataforma a cada abertura da tela (cota baixa). Campos mínimos de
+ * propósito: nenhum dos que derrubaram a resposta no achado 2.
+ */
+export async function lerGastoDiario(
+  token: string,
+  contaId: string,
+  de: string,
+  ate: string,
+): Promise<ResultadoDeLeitura<LinhaDeGastoDiarioCrua[]>> {
+  const url = montarUrl(`${encodeURIComponent(contaId)}/insights`, {
+    level: "campaign",
+    time_increment: "1",
+    time_range: JSON.stringify({ since: de, until: ate }),
+    fields: "campaign_id,campaign_name,spend,impressions,inline_link_clicks,account_currency,date_start",
+    limit: "500",
+  });
+  return buscarPaginado<LinhaDeGastoDiarioCrua>(url, token, "insights");
+}

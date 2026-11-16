@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { baldesDaJanela, juntarPorGrupo, montarSerie, percentualDeFechamento, somarLinhas } from "./relatorios";
+import { baldesDaJanela, juntarPorGrupo, montarCusto, montarSerie, percentualDeFechamento, somarLinhas } from "./relatorios";
 
 const bruta = (o: Partial<Parameters<typeof juntarPorGrupo>[0][number]>) => ({
   grupo: "A", moeda: "BRL", leads: 0, abertos: 0, ganhos: 0, perdidos: 0, valor_ganho_centavos: 0, mediana_dias_ate_ganho: null, ...o,
@@ -44,5 +44,28 @@ describe("relatorios sfy", () => {
   it("baldes de semana começam na segunda e os de mês no dia 1", () => {
     expect(baldesDaJanela("2026-11-04", "2026-11-20", "semana")).toEqual(["2026-11-02", "2026-11-09", "2026-11-16"]);
     expect(baldesDaJanela("2026-10-15", "2026-12-01", "mes")).toEqual(["2026-10-01", "2026-11-01"]);
+  });
+
+  it("custo: divide só com denominador, mais gasto primeiro e total coerente", () => {
+    const c = (o: Partial<Parameters<typeof montarCusto>[0][number]>) => ({
+      plataforma: "meta_ads", campanha_id: "X", campanha_nome: "", moeda: "BRL", gasto_centavos: 0, leads: 0, oportunidades: 0, ganhos: 0, valor_ganho_centavos: 0, ...o,
+    });
+    const r = montarCusto([
+      c({ campanha_id: "C2", gasto_centavos: 7000 }),
+      c({ campanha_id: "C1", gasto_centavos: 15000, leads: 3, oportunidades: 2, ganhos: 1, valor_ganho_centavos: 30000 }),
+      c({ plataforma: "", campanha_id: "", leads: 1 }),
+    ]);
+    expect(r.linhas.map((l) => l.campanha_id)).toEqual(["C1", "C2", ""]);
+    const c1 = r.linhas[0]!;
+    expect(c1.custo_por_lead_centavos).toBe(5000);
+    expect(c1.custo_por_oportunidade_centavos).toBe(7500);
+    expect(c1.retorno).toBe(2);
+    expect(r.linhas[1]!.custo_por_lead_centavos).toBeNull(); // gasto sem lead: "—", não 0 nem infinito
+    expect(r.linhas[2]!.retorno).toBeNull(); // lead sem campanha: sem gasto para dividir
+    expect(r.total.gasto_centavos).toBe(22000);
+    expect(r.total.custo_por_lead_centavos).toBe(5500);
+    const mista = montarCusto([c({ campanha_id: "A", gasto_centavos: 100, leads: 1 }), c({ campanha_id: "B", moeda: "USD", gasto_centavos: 100, leads: 1 })]);
+    expect(mista.total.moeda_unica).toBe(false);
+    expect(mista.total.custo_por_lead_centavos).toBeNull();
   });
 });

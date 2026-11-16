@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
-import type { LinhaDestino, SeriePorPeriodo } from "@/lib/sfy/relatorios";
+import type { LinhaDeCusto, LinhaDestino, SeriePorPeriodo } from "@/lib/sfy/relatorios";
 
 export type TotalDoRelatorio = Omit<LinhaDestino, "grupo" | "mediana_dias_ate_ganho">;
 
@@ -32,4 +32,10 @@ export function useRelatorioSfy<T>(parametros: Record<string, string>, habilitad
     staleTime: 30_000,
     enabled: habilitado,
   });
+}
+
+export interface RelatorioDeCusto {
+  janela: { de: string; ate: string };
+  linhas: LinhaDeCusto[];
+  total: Omit<LinhaDeCusto, "plataforma" | "campanha_id" | "campanha_nome"> & { moeda_unica: boolean };
 }

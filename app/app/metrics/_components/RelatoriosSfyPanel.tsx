@@ -16,6 +16,7 @@ import { useTagDeIdioma } from "@/hooks/i18n/useLocaleDeData";
 import { useT } from "@/hooks/i18n/useT";
 import {
   useRelatorioSfy,
+  type RelatorioDeCusto,
   type RelatorioPorDestino,
   type RelatorioPorOrigem,
   type RelatorioPorPeriodo,
@@ -24,7 +25,7 @@ import {
 import { formatCents } from "@/lib/money";
 import type { LinhaDestino } from "@/lib/sfy/relatorios";
 
-type Visao = "parceiro" | "supervisor" | "periodo" | "origem";
+type Visao = "parceiro" | "supervisor" | "periodo" | "origem" | "custo";
 const DIAS = ["30", "60", "90"] as const;
 
 function dia(offsetDias: number): string {
@@ -64,6 +65,7 @@ export function RelatoriosSfyPanel() {
   );
   const periodo = useRelatorioSfy<RelatorioPorPeriodo>({ tipo: "periodo", granularidade, ...base }, visao === "periodo");
   const origem = useRelatorioSfy<RelatorioPorOrigem>({ tipo: "origem", ...base }, visao === "origem");
+  const custo = useRelatorioSfy<RelatorioDeCusto>({ tipo: "custo", ...base }, visao === "custo");
 
   const n = (v: number) => v.toLocaleString(tag);
   const pct = (v: number | null) => (v === null ? "—" : `${(v * 100).toLocaleString(tag, { maximumFractionDigits: 1 })}%`);
@@ -159,7 +161,7 @@ export function RelatoriosSfyPanel() {
     );
   }
 
-  const ativo = visao === "periodo" ? periodo : visao === "origem" ? origem : destino;
+  const ativo = visao === "periodo" ? periodo : visao === "origem" ? origem : visao === "custo" ? custo : destino;
 
   let corpo: React.ReactNode = null;
   if (ativo.isLoading) {
@@ -176,6 +178,62 @@ export function RelatoriosSfyPanel() {
           </p>
         ) : null}
         {tabelaDeDestino(d.linhas, d.total, visao === "parceiro" ? t("Parceiro") : t("Supervisor"), visao)}
+      </>
+    );
+  } else if (visao === "custo") {
+    const c = custo.data as RelatorioDeCusto;
+    const dinheiro = (cents: number | null, moeda: string) => (cents === null ? "—" : formatCents(Math.round(cents), moeda || "BRL"));
+    const razao = (v: number | null) => (v === null ? "—" : `${v.toLocaleString(tag, { maximumFractionDigits: 2 })}x`);
+    const semGasto = c.linhas.every((l) => l.gasto_centavos === 0);
+    const linhaDoCusto = (l: (typeof c.linhas)[number]) => {
+      const nome = l.campanha_id === "" ? t("Sem campanha identificada") : l.campanha_nome || l.campanha_id;
+      return (
+        <TableRow key={`${l.plataforma}-${l.campanha_id}`} className={LINHA}>
+          <TableCell className={`max-md:col-span-2 max-md:p-0 max-md:font-medium ${l.campanha_id === "" ? "text-muted-foreground" : ""}`}>{nome}</TableCell>
+          <TableCell data-rotulo={t("Gasto")} className={CELULA}>{l.campanha_id === "" ? "—" : dinheiro(l.gasto_centavos, l.moeda)}</TableCell>
+          <TableCell data-rotulo={t("Leads")} className={CELULA}>{n(l.leads)}</TableCell>
+          <TableCell data-rotulo={t("Custo por lead")} className={CELULA}>{dinheiro(l.custo_por_lead_centavos, l.moeda)}</TableCell>
+          <TableCell data-rotulo={t("Oportunidades")} className={CELULA}>{n(l.oportunidades)}</TableCell>
+          <TableCell data-rotulo={t("Custo por oportunidade")} className={CELULA}>{dinheiro(l.custo_por_oportunidade_centavos, l.moeda)}</TableCell>
+          <TableCell data-rotulo={t("Ganhos")} className={CELULA}>{n(l.ganhos)}</TableCell>
+          <TableCell data-rotulo={t("Retorno")} className={CELULA}>{razao(l.retorno)}</TableCell>
+        </TableRow>
+      );
+    };
+    corpo = (
+      <>
+        {semGasto ? (
+          <p className="mb-2 text-sm text-muted-foreground">
+            {t("Nenhum gasto de anúncio guardado neste período. A leitura diária do gasto é ligada na entrega.")}
+          </p>
+        ) : null}
+        <Table className="max-md:block">
+          <TableHeader className="max-md:hidden">
+            <TableRow>
+              <TableHead>{t("Campanha")}</TableHead>
+              <TableHead className="text-right">{t("Gasto")}</TableHead>
+              <TableHead className="text-right">{t("Leads")}</TableHead>
+              <TableHead className="text-right">{t("Custo por lead")}</TableHead>
+              <TableHead className="text-right">{t("Oportunidades")}</TableHead>
+              <TableHead className="text-right">{t("Custo por oportunidade")}</TableHead>
+              <TableHead className="text-right">{t("Ganhos")}</TableHead>
+              <TableHead className="text-right">{t("Retorno")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="max-md:block">
+            {c.linhas.map(linhaDoCusto)}
+            <TableRow className={`font-medium ${LINHA}`}>
+              <TableCell className="max-md:col-span-2 max-md:p-0">{t("Total")}</TableCell>
+              <TableCell data-rotulo={t("Gasto")} className={CELULA}>{dinheiro(c.total.gasto_centavos, c.total.moeda)}</TableCell>
+              <TableCell data-rotulo={t("Leads")} className={CELULA}>{n(c.total.leads)}</TableCell>
+              <TableCell data-rotulo={t("Custo por lead")} className={CELULA}>{dinheiro(c.total.custo_por_lead_centavos, c.total.moeda)}</TableCell>
+              <TableCell data-rotulo={t("Oportunidades")} className={CELULA}>{n(c.total.oportunidades)}</TableCell>
+              <TableCell data-rotulo={t("Custo por oportunidade")} className={CELULA}>{dinheiro(c.total.custo_por_oportunidade_centavos, c.total.moeda)}</TableCell>
+              <TableCell data-rotulo={t("Ganhos")} className={CELULA}>{n(c.total.ganhos)}</TableCell>
+              <TableCell data-rotulo={t("Retorno")} className={CELULA}>{razao(c.total.retorno)}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </>
     );
   } else if (visao === "origem") {
@@ -242,6 +300,7 @@ export function RelatoriosSfyPanel() {
               <SelectItem value="supervisor">{t("Por supervisor")}</SelectItem>
               <SelectItem value="periodo">{t("Leads por período e categoria")}</SelectItem>
               <SelectItem value="origem">{t("Por origem")}</SelectItem>
+              <SelectItem value="custo">{t("Custo por campanha")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={dias} onValueChange={(v) => setDias(v as (typeof DIAS)[number])}>

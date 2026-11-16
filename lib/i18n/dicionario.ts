@@ -19686,6 +19686,14 @@ export const DICIONARIO: Traducoes = {
   "Sem parceiro": { es: "Sin socio" },
   "Valor fechado": { es: "Valor cerrado" },
 
+  "Sem campanha identificada": { es: "Sin campaña identificada" },
+  "Gasto": { es: "Gasto" },
+  "Custo por lead": { es: "Costo por lead" },
+  "Oportunidades": { es: "Oportunidades" },
+  "Custo por oportunidade": { es: "Costo por oportunidad" },
+  "Nenhum gasto de anúncio guardado neste período. A leitura diária do gasto é ligada na entrega.": { es: "Ningún gasto de anuncios guardado en este período. La lectura diaria del gasto se activa en la entrega." },
+  "Custo por campanha": { es: "Costo por campaña" },
+
   // ═══ sfy Bloco C: Parceiros e supervisores (distribuição) ═══
   "Parceiros e supervisores": { es: "Socios y supervisores" },
   "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.": { es: "Contactos de quien recibe los clientes derivados y a quién responde cada socio." },

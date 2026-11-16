@@ -157,3 +157,69 @@ export function rotulosDasOpcoes(funis: Array<{ settings: unknown }>, rotulo: st
   }
   return mapa;
 }
+
+export interface LinhaDeCustoBruta {
+  plataforma: string;
+  campanha_id: string;
+  campanha_nome: string;
+  moeda: string;
+  gasto_centavos: number;
+  leads: number;
+  oportunidades: number;
+  ganhos: number;
+  valor_ganho_centavos: number;
+}
+
+export interface LinhaDeCusto extends LinhaDeCustoBruta {
+  /** gasto ÷ leads; `null` sem lead (nunca divide por zero nem inventa 0). */
+  custo_por_lead_centavos: number | null;
+  /** gasto ÷ oportunidades; `null` sem oportunidade. */
+  custo_por_oportunidade_centavos: number | null;
+  /** valor ganho ÷ gasto (1,5 = R$ 1,50 de venda por R$ 1,00 gasto); `null` sem gasto. */
+  retorno: number | null;
+}
+
+export function dividir(a: number, b: number): number | null {
+  return b > 0 ? a / b : null;
+}
+
+/**
+ * Deriva os indicadores por campanha. Mais gasto primeiro. A linha de campanha vazia (leads sem
+ * campaign_id) fica visível e sem indicadores: não há gasto a dividir, e ratear seria inventar.
+ * Total só quando todo o gasto é de uma moeda; com mais de uma, `total` traz os somatórios sem
+ * os indicadores (R$ + US$ não significa nada).
+ */
+export function montarCusto(brutas: LinhaDeCustoBruta[]): { linhas: LinhaDeCusto[]; total: Omit<LinhaDeCusto, "plataforma" | "campanha_id" | "campanha_nome"> & { moeda_unica: boolean } } {
+  const linhas = brutas
+    .map((b) => {
+      const gasto = Number(b.gasto_centavos);
+      const leads = Number(b.leads);
+      const oportunidades = Number(b.oportunidades);
+      const valor = Number(b.valor_ganho_centavos);
+      return {
+        ...b,
+        gasto_centavos: gasto, leads, oportunidades, ganhos: Number(b.ganhos), valor_ganho_centavos: valor,
+        custo_por_lead_centavos: dividir(gasto, leads),
+        custo_por_oportunidade_centavos: dividir(gasto, oportunidades),
+        retorno: dividir(valor, gasto),
+      };
+    })
+    .sort((a, b) => b.gasto_centavos - a.gasto_centavos || b.leads - a.leads || a.campanha_id.localeCompare(b.campanha_id));
+  const moedasDoGasto = new Set(linhas.filter((l) => l.gasto_centavos > 0).map((l) => l.moeda || "BRL"));
+  const soma = (k: "gasto_centavos" | "leads" | "oportunidades" | "ganhos" | "valor_ganho_centavos") => linhas.reduce((s, l) => s + l[k], 0);
+  const gasto = soma("gasto_centavos");
+  const leads = soma("leads");
+  const oportunidades = soma("oportunidades");
+  const valor = soma("valor_ganho_centavos");
+  const unica = moedasDoGasto.size <= 1;
+  return {
+    linhas,
+    total: {
+      moeda: [...moedasDoGasto][0] ?? "BRL", moeda_unica: unica,
+      gasto_centavos: gasto, leads, oportunidades, ganhos: soma("ganhos"), valor_ganho_centavos: valor,
+      custo_por_lead_centavos: unica ? dividir(gasto, leads) : null,
+      custo_por_oportunidade_centavos: unica ? dividir(gasto, oportunidades) : null,
+      retorno: unica ? dividir(valor, gasto) : null,
+    },
+  };
+}
