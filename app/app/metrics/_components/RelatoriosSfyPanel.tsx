@@ -42,6 +42,10 @@ function baixarCsv(nome: string, linhas: string[][]) {
   URL.revokeObjectURL(url);
 }
 
+/** No celular a linha vira um cartão "Rótulo valor" (o mesmo padrão da tabela por atendente). */
+const CELULA = "text-right tabular-nums max-md:p-0 max-md:text-left max-md:before:mr-1 max-md:before:text-muted-foreground max-md:before:content-[attr(data-rotulo)]";
+const LINHA = "max-md:grid max-md:grid-cols-2 max-md:gap-x-3 max-md:py-2";
+
 type Ordem = "leads" | "ganhos" | "percentual_fechamento" | "grupo";
 
 export function RelatoriosSfyPanel() {
@@ -111,8 +115,8 @@ export function RelatoriosSfyPanel() {
             {t("Exportar CSV")}
           </Button>
         </div>
-        <Table>
-          <TableHeader>
+        <Table className="max-md:block">
+          <TableHeader className="max-md:hidden">
             <TableRow>
               <TableHead>{rotuloGrupo}</TableHead>
               <TableHead className="text-right">{t("Negócios")}</TableHead>
@@ -124,30 +128,30 @@ export function RelatoriosSfyPanel() {
               <TableHead className="text-right">{t("Mediana de dias até ganhar")}</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="max-md:block">
             {ordenadas.map((l) => (
-              <TableRow key={l.grupo}>
-                <TableCell className={l.grupo ? "" : "text-muted-foreground"}>{(l.rotulo ?? l.grupo) || rotuloVazio(v)}</TableCell>
-                <TableCell className="text-right tabular-nums">{n(l.leads)}</TableCell>
-                <TableCell className="text-right tabular-nums">{n(l.abertos)}</TableCell>
-                <TableCell className="text-right tabular-nums">{n(l.ganhos)}</TableCell>
-                <TableCell className="text-right tabular-nums">{n(l.perdidos)}</TableCell>
-                <TableCell className="text-right tabular-nums">{pct(l.percentual_fechamento)}</TableCell>
-                <TableCell className="text-right tabular-nums">{valor(l.valor_ganho_por_moeda)}</TableCell>
-                <TableCell className="text-right tabular-nums">
+              <TableRow key={l.grupo} className={LINHA}>
+                <TableCell className={`max-md:col-span-2 max-md:p-0 max-md:font-medium ${l.grupo ? "" : "text-muted-foreground"}`}>{(l.rotulo ?? l.grupo) || rotuloVazio(v)}</TableCell>
+                <TableCell data-rotulo={t("Negócios")} className={CELULA}>{n(l.leads)}</TableCell>
+                <TableCell data-rotulo={t("Em aberto")} className={CELULA}>{n(l.abertos)}</TableCell>
+                <TableCell data-rotulo={t("Ganhos")} className={CELULA}>{n(l.ganhos)}</TableCell>
+                <TableCell data-rotulo={t("Perdidos")} className={CELULA}>{n(l.perdidos)}</TableCell>
+                <TableCell data-rotulo={t("% de fechamento")} className={CELULA}>{pct(l.percentual_fechamento)}</TableCell>
+                <TableCell data-rotulo={t("Valor fechado")} className={CELULA}>{valor(l.valor_ganho_por_moeda)}</TableCell>
+                <TableCell data-rotulo={t("Mediana de dias até ganhar")} className={`${CELULA} max-md:col-span-2`}>
                   {l.mediana_dias_ate_ganho === null ? "—" : l.mediana_dias_ate_ganho.toLocaleString(tag, { maximumFractionDigits: 1 })}
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow className="font-medium">
-              <TableCell>{t("Total")}</TableCell>
-              <TableCell className="text-right tabular-nums">{n(total.leads)}</TableCell>
-              <TableCell className="text-right tabular-nums">{n(total.abertos)}</TableCell>
-              <TableCell className="text-right tabular-nums">{n(total.ganhos)}</TableCell>
-              <TableCell className="text-right tabular-nums">{n(total.perdidos)}</TableCell>
-              <TableCell className="text-right tabular-nums">{pct(total.percentual_fechamento)}</TableCell>
-              <TableCell className="text-right tabular-nums">{valor(total.valor_ganho_por_moeda)}</TableCell>
-              <TableCell />
+            <TableRow className={`font-medium ${LINHA}`}>
+              <TableCell className="max-md:col-span-2 max-md:p-0">{t("Total")}</TableCell>
+              <TableCell data-rotulo={t("Negócios")} className={CELULA}>{n(total.leads)}</TableCell>
+              <TableCell data-rotulo={t("Em aberto")} className={CELULA}>{n(total.abertos)}</TableCell>
+              <TableCell data-rotulo={t("Ganhos")} className={CELULA}>{n(total.ganhos)}</TableCell>
+              <TableCell data-rotulo={t("Perdidos")} className={CELULA}>{n(total.perdidos)}</TableCell>
+              <TableCell data-rotulo={t("% de fechamento")} className={CELULA}>{pct(total.percentual_fechamento)}</TableCell>
+              <TableCell data-rotulo={t("Valor fechado")} className={CELULA}>{valor(total.valor_ganho_por_moeda)}</TableCell>
+              <TableCell className="max-md:hidden" />
             </TableRow>
           </TableBody>
         </Table>
@@ -196,8 +200,8 @@ export function RelatoriosSfyPanel() {
             {t("Negócios criados no período")}: {n(p.total)}
           </span>
         </div>
-        <Table>
-          <TableHeader>
+        <Table className="max-md:block">
+          <TableHeader className="max-md:hidden">
             <TableRow>
               <TableHead>{t("Período")}</TableHead>
               {p.categorias.map((c) => (
@@ -206,14 +210,14 @@ export function RelatoriosSfyPanel() {
               <TableHead className="text-right">{t("Total")}</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="max-md:block">
             {p.baldes.map((b) => (
-              <TableRow key={b}>
-                <TableCell>{new Date(`${b}T00:00:00`).toLocaleDateString(tag)}</TableCell>
+              <TableRow key={b} className={LINHA}>
+                <TableCell className="max-md:col-span-2 max-md:p-0 max-md:font-medium">{new Date(`${b}T00:00:00`).toLocaleDateString(tag)}</TableCell>
                 {p.categorias.map((c) => (
-                  <TableCell key={c} className="text-right tabular-nums">{n(p.matriz[b]?.[c] ?? 0)}</TableCell>
+                  <TableCell key={c} data-rotulo={c || t("Sem categoria")} className={CELULA}>{n(p.matriz[b]?.[c] ?? 0)}</TableCell>
                 ))}
-                <TableCell className="text-right tabular-nums">
+                <TableCell data-rotulo={t("Total")} className={CELULA}>
                   {n(p.categorias.reduce((s, c) => s + (p.matriz[b]?.[c] ?? 0), 0))}
                 </TableCell>
               </TableRow>
@@ -251,7 +255,7 @@ export function RelatoriosSfyPanel() {
             </SelectContent>
           </Select>
           <label className="flex items-center gap-1 text-sm">
-            <input type="checkbox" checked={historico} onChange={(e) => setHistorico(e.target.checked)} />
+            <input type="checkbox" className="size-4 max-md:size-11" checked={historico} onChange={(e) => setHistorico(e.target.checked)} />
             {t("Incluir histórico importado")}
           </label>
         </div>
