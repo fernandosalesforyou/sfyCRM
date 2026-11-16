@@ -163,6 +163,9 @@ CRONS="
 # sfy (Bloco D): gasto diário por campanha da Meta, uma vez por dia (06:20 UTC). Só roda para quem ligou
 # settings.sfy.gasto_de_anuncio; sem organização ligada, a rota não faz nada.
 20 6 * * *|120|api/v1/cron/sfy-gasto-diario
+# sfy (Bloco D): relatório semanal por parceiro e supervisor, toda segunda 12:00 UTC (09h de Brasília).
+# Os envios têm pausa entre si (número interno), por isso o limite de 900 s. Nasce desligado.
+0 12 * * 1|900|api/v1/cron/sfy-relatorio-semanal
 40 4 * * *|120|api/v1/cron/data-retention
 0 8 * * *|60|api/v1/cron/proposal-expiry
 30 8 * * *|60|api/v1/cron/proposal-promised-not-created

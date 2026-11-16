@@ -218,12 +218,19 @@ export async function avisarDaDistribuicao(
     urlPublica: env.NEXT_PUBLIC_APP_URL ?? "",
   };
 
-  const deps: DependenciasDosAvisos = {
+  const deps = dependenciasReais(supabase, ctx.organization_id, "sfy-distribuicao");
+  const resumo = await enviarAvisos(deps, config, dados);
+  return { ...resumo, texto_para_o_cliente };
+}
+
+/** Os transportes reais: WhatsApp pelo número interno de Avisos e e-mail pelo roteador. */
+export function dependenciasReais(supabase: SupabaseClient, organizationId: string, origem: string): DependenciasDosAvisos {
+  return {
     enviaWhatsapp: async (para, texto) => {
       const { data: cfg } = await supabase
         .from("config_aviso_de_caso")
         .select("channel_session_id")
-        .eq("organization_id", ctx.organization_id)
+        .eq("organization_id", organizationId)
         .maybeSingle();
       const canalId = cfg?.channel_session_id as string | undefined;
       if (!canalId) throw new Error("sem_numero_de_avisos");
@@ -231,17 +238,15 @@ export async function avisarDaDistribuicao(
       const { createAdminClient } = await import("@/lib/supabase/admin");
       const transporte = await criarTransporteDoAviso(createAdminClient());
       const canal = { id: canalId, status: "connected", archived_at: null, aceitaMensagemLivre: true } as Parameters<typeof transporte.envia>[1];
-      if (!(await transporte.configurado(ctx.organization_id, canal))) throw new Error("canal_nao_configurado");
-      const destino = await transporte.resolveDestino(ctx.organization_id, canal, para);
+      if (!(await transporte.configurado(organizationId, canal))) throw new Error("canal_nao_configurado");
+      const destino = await transporte.resolveDestino(organizationId, canal, para);
       if (!destino) throw new Error("destino_invalido");
-      await transporte.envia(ctx.organization_id, canal, destino, texto);
+      await transporte.envia(organizationId, canal, destino, texto);
     },
     enviaEmail: async (pedido) => {
       const { sendEmail } = await import("@/lib/email/roteador");
-      const res = await sendEmail({ ...pedido, tags: [{ name: "origem", value: "sfy-distribuicao" }] });
+      const res = await sendEmail({ ...pedido, tags: [{ name: "origem", value: origem }] });
       return { ok: res.ok };
     },
   };
-  const resumo = await enviarAvisos(deps, config, dados);
-  return { ...resumo, texto_para_o_cliente };
 }
