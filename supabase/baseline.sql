@@ -74169,6 +74169,16 @@ begin
   end loop;
 end $$;
 
+-- Grants literais (a régua do baseline lê o texto, não o laço acima).
+grant select on public.sfy_supervisores to authenticated;
+grant select, insert, update, delete on public.sfy_supervisores to service_role;
+grant select on public.sfy_parceiros to authenticated;
+grant select, insert, update, delete on public.sfy_parceiros to service_role;
+grant select on public.sfy_parceiro_cidades to authenticated;
+grant select, insert, update, delete on public.sfy_parceiro_cidades to service_role;
+grant select on public.sfy_cidade_supervisor to authenticated;
+grant select, insert, update, delete on public.sfy_cidade_supervisor to service_role;
+
 -- Nome de cidade sem acento, minúsculo, espaços únicos.
 create or replace function public.fn_sfy_normaliza_cidade(p_texto text)
 returns text

@@ -14,6 +14,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { normalizePhoneBR } from "@/lib/channels/phone-variants";
+import { rotuloDoContato } from "@/lib/contacts/rotulo-do-contato";
 import type { DestinoEscolhido } from "@/lib/sfy/distribuicao";
 
 export interface PessoaDoAviso {
@@ -193,12 +194,12 @@ export async function avisarDaDistribuicao(
 
   const { data: lead } = await supabase
     .from("crm_leads")
-    .select("title, contacts(display_name, phone, email)")
+    .select("title, contacts(name, display_name, phone_number, email)")
     .eq("organization_id", ctx.organization_id)
     .eq("id", ctx.lead_id)
     .maybeSingle();
   const contato = (Array.isArray(lead?.contacts) ? lead?.contacts[0] : lead?.contacts) as
-    | { display_name?: string | null; phone?: string | null; email?: string | null }
+    | { name?: string | null; display_name?: string | null; phone_number?: string | null; email?: string | null }
     | null
     | undefined;
 
@@ -207,7 +208,11 @@ export async function avisarDaDistribuicao(
     categoria: ctx.categoria,
     cidade: ctx.cidade,
     uf: ctx.uf,
-    lead: { nome: contato?.display_name ?? lead?.title ?? "", telefone: contato?.phone ?? null, email: contato?.email ?? null },
+    lead: {
+      nome: contato ? rotuloDoContato(contato) : (lead?.title ?? ""),
+      telefone: contato?.phone_number ?? null,
+      email: contato?.email ?? null,
+    },
     parceiro,
     supervisor,
     urlPublica: env.NEXT_PUBLIC_APP_URL ?? "",
