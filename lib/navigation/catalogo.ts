@@ -933,6 +933,17 @@ export const NAV_CATALOG = [
     minRole: "manager",
   },
   {
+    // sfy (Bloco D): fechamentos que os parceiros informam pelo link. Configuração de empresa, sem
+    // `sidebar`. Gerente vê; só admin trata (a rota confere).
+    href: "/app/settings/fechamentos",
+    label: "Fechamentos informados",
+    description: "Pedidos de fechamento enviados pelos parceiros, para conferir e concluir.",
+    icon: "Users",
+    group: "organizacao",
+    section: "Sua empresa",
+    minRole: "manager",
+  },
+  {
     // ── A porta do ALVO (#3025, fatia 1) ────────────────────────────────────
     //
     // Mora aqui, ao lado de Desempenho, porque é a metade que faltava da MESMA

@@ -46,6 +46,10 @@ export const PUBLIC_PATHS: RegExp[] = [
   // a página de agradecimento. O token é o `path_token` da fonte de webhook
   // (hex/uuid, sem sessão); âncoras com `$` para nenhum sub-path nascer público.
   /^\/f\/[A-Za-z0-9_-]{16,128}(\/obrigado)?$/,
+  // sfy (Climabrisa, Bloco D): link de fechamento do parceiro (token de 43 caracteres, sem sessão) e a rota
+  // que recebe o pedido. Âncoras com `$`: nenhum sub-path nasce público.
+  /^\/fechamento\/[A-Za-z0-9_-]{43}$/,
+  /^\/api\/v1\/sfy\/fechamento\/[A-Za-z0-9_-]{43}$/,
   /^\/api\/v1\/webhooks\//,
   /^\/api\/v1\/cron\//,
   // Landing page de captura de clique do Google Ads (migration 0306). Quem

@@ -67,4 +67,26 @@ describe("relatório semanal sfy", () => {
     const sup = [{ nome: "Leo", whatsapp: "3", email: null, ativo: true }];
     expect(ligarGrupos([linha({ grupo: "Leo", rotulo: "Leo" })], "supervisor", sup)).toHaveLength(1);
   });
+
+  it("link de fechamento: só no resumo do PARCEIRO, só com a opção ligada, e a falha em gerá-lo não impede o envio", async () => {
+    const cfg = configDoSemanal({ sfy: { relatorio_semanal: true, link_de_fechamento: true } });
+    const d = deps();
+    const gerarLink = vi.fn(async () => "https://crm.exemplo/fechamento/TOKEN");
+    await enviarResumos(d, cfg, [dest({ nome: "P" }), dest({ papel: "supervisor", nome: "S" })], { pausaMs: 0, gerarLink });
+    expect(gerarLink).toHaveBeenCalledTimes(1);
+    const textos = d.enviaWhatsapp.mock.calls.map((c) => (c as unknown as [string, string])[1]);
+    expect(textos[0]).toContain("https://crm.exemplo/fechamento/TOKEN");
+    expect(textos[1]).not.toContain("fechamento/");
+
+    const desligado = deps();
+    const g2 = vi.fn(async () => "https://x/fechamento/T");
+    await enviarResumos(desligado, configDoSemanal({ sfy: { relatorio_semanal: true } }), [dest()], { pausaMs: 0, gerarLink: g2 });
+    expect(g2).not.toHaveBeenCalled();
+
+    const quebra = deps();
+    const r = await enviarResumos(quebra, cfg, [dest()], { pausaMs: 0, gerarLink: async () => { throw new Error("x"); } });
+    expect(r.falhas).toContain("link:Parceiro Fictício");
+    expect(quebra.enviaWhatsapp).toHaveBeenCalledTimes(1);
+    expect((quebra.enviaWhatsapp.mock.calls[0] as unknown as [string, string])[1]).not.toContain("fechamento/");
+  });
 });

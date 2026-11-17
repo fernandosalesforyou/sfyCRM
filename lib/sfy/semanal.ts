@@ -15,6 +15,7 @@
 import type { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePhoneBR } from "@/lib/channels/phone-variants";
 import { normalizaTexto } from "@/lib/sfy/distribuicao";
+import { criarLinkDeFechamento } from "@/lib/sfy/fechamento";
 import { dependenciasReais, type DependenciasDosAvisos } from "@/lib/sfy/avisos";
 import {
   chavesDoCampo,
@@ -35,6 +36,8 @@ export interface ConfigDoSemanal {
   ligado: boolean;
   teste: { whatsapp: string | null; email: string | null } | null;
   ultimoEnvio: string | null;
+  /** `settings.sfy.link_de_fechamento = true`: o resumo do PARCEIRO leva o link para informar fechamentos. */
+  linkDeFechamento: boolean;
 }
 
 export function configDoSemanal(settings: unknown): ConfigDoSemanal {
@@ -46,6 +49,7 @@ export function configDoSemanal(settings: unknown): ConfigDoSemanal {
     ligado: sfy.relatorio_semanal === true,
     teste: t && typeof t === "object" ? { whatsapp, email } : null,
     ultimoEnvio: typeof sfy.relatorio_semanal_ultimo_envio === "string" ? sfy.relatorio_semanal_ultimo_envio : null,
+    linkDeFechamento: sfy.link_de_fechamento === true,
   };
 }
 
@@ -64,7 +68,7 @@ const dinheiro = (m: Record<string, number>): string => {
     .join(" + ");
 };
 
-export function textoDoResumo(papel: "parceiro" | "supervisor", nome: string, l: LinhaDestino): { assunto: string; texto: string } {
+export function textoDoResumo(papel: "parceiro" | "supervisor", nome: string, l: LinhaDestino, linkDeFechamento?: string | null): { assunto: string; texto: string } {
   const pct = l.percentual_fechamento === null ? "sem negócio encerrado ainda" : `${(l.percentual_fechamento * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
   const linhas = [
     `Resumo dos últimos ${DIAS_DO_RESUMO} dias — Climabrisa`,
@@ -77,12 +81,17 @@ export function textoDoResumo(papel: "parceiro" | "supervisor", nome: string, l:
     `Taxa de fechamento: ${pct}`,
     `Valor fechado: ${dinheiro(l.valor_ganho_por_moeda)}`,
     "",
+    ...(linkDeFechamento
+      ? ["Fechou algum negócio? Informe o valor e a nota por este link pessoal (vale por 8 dias, não compartilhe):", linkDeFechamento, ""]
+      : []),
     "Dúvidas sobre algum negócio? Fale com o seu supervisor.",
   ];
   return { assunto: `Climabrisa — seu resumo dos últimos ${DIAS_DO_RESUMO} dias`, texto: linhas.join("\n") };
 }
 
 export interface Destinatario {
+  /** id do cadastro (parceiro ou supervisor). */
+  id?: string;
   papel: "parceiro" | "supervisor";
   nome: string;
   whatsapp: string | null;
@@ -102,7 +111,7 @@ export async function enviarResumos(
   deps: DependenciasDosAvisos,
   config: ConfigDoSemanal,
   destinatarios: Destinatario[],
-  opcoes: { pausaMs?: number } = {},
+  opcoes: { pausaMs?: number; gerarLink?: (d: Destinatario) => Promise<string | null> } = {},
 ): Promise<ResumoDoSemanal> {
   const r: ResumoDoSemanal = { enviados: 0, falhas: [], pulados: [], modo: config.teste ? "teste" : "real" };
   if (!config.ligado) return { ...r, modo: "desligado", pulados: ["relatorio_semanal_desligado"] };
@@ -114,7 +123,15 @@ export async function enviarResumos(
       r.pulados.push("teto_de_envios");
       break;
     }
-    const { assunto, texto } = textoDoResumo(d.papel, d.nome, d.linha);
+    let link: string | null = null;
+    if (config.linkDeFechamento && d.papel === "parceiro" && opcoes.gerarLink) {
+      try {
+        link = await opcoes.gerarLink(d);
+      } catch {
+        r.falhas.push(`link:${d.nome}`);
+      }
+    }
+    const { assunto, texto } = textoDoResumo(d.papel, d.nome, d.linha, link);
     const prefixo = config.teste ? `[TESTE — iria para ${d.nome}]\n` : "";
     const numero = normalizePhoneBR((config.teste ? config.teste.whatsapp : d.whatsapp) ?? "");
     const email = (config.teste ? config.teste.email : d.email)?.trim().toLowerCase() ?? "";
@@ -153,7 +170,7 @@ const CODIGO_DO_ROTULO = /^\s*(\S+?)\s*[-–]/;
 export function ligarGrupos(
   linhas: LinhaDestino[],
   papel: "parceiro" | "supervisor",
-  cadastro: Array<{ codigo?: string | null; nome: string; whatsapp: string | null; email: string | null; ativo: boolean }>,
+  cadastro: Array<{ id?: string; codigo?: string | null; nome: string; whatsapp: string | null; email: string | null; ativo: boolean }>,
 ): Destinatario[] {
   const saida: Destinatario[] = [];
   for (const l of linhas) {
@@ -166,7 +183,7 @@ export function ligarGrupos(
       if (papel === "parceiro") return (c.codigo && (alvos.has(normalizaTexto(c.codigo)) || codigo === c.codigo)) || alvos.has(normalizaTexto(c.nome));
       return alvos.has(normalizaTexto(c.nome)) || [...alvos].some((a) => a.startsWith(normalizaTexto(c.nome)));
     });
-    if (achou) saida.push({ papel, nome: achou.nome, whatsapp: achou.whatsapp, email: achou.email, linha: l });
+    if (achou) saida.push({ id: achou.id, papel, nome: achou.nome, whatsapp: achou.whatsapp, email: achou.email, linha: l });
   }
   return saida;
 }
@@ -177,7 +194,7 @@ export async function executarRelatorioSemanal(
   organizationId: string,
   agora: Date,
   deps: DependenciasDosAvisos = dependenciasReais(admin, organizationId, "sfy-relatorio-semanal"),
-  opcoes: { pausaMs?: number } = {},
+  opcoes: { pausaMs?: number; urlPublica?: string } = {},
 ): Promise<ResumoDoSemanal> {
   const { data: org } = await admin.from("organizations").select("settings").eq("id", organizationId).maybeSingle();
   const config = configDoSemanal(org?.settings);
@@ -190,8 +207,8 @@ export async function executarRelatorioSemanal(
   const de = new Date(agora.getTime() - DIAS_DO_RESUMO * 24 * 60 * 60 * 1000).toISOString();
   const { data: funis } = await admin.from("crm_pipelines").select("settings").eq("organization_id", organizationId);
   const [{ data: parceiros }, { data: supervisores }] = await Promise.all([
-    admin.from("sfy_parceiros").select("codigo, nome, whatsapp, email, ativo").eq("organization_id", organizationId),
-    admin.from("sfy_supervisores").select("nome, whatsapp, email, ativo").eq("organization_id", organizationId),
+    admin.from("sfy_parceiros").select("id, codigo, nome, whatsapp, email, ativo").eq("organization_id", organizationId),
+    admin.from("sfy_supervisores").select("id, nome, whatsapp, email, ativo").eq("organization_id", organizationId),
   ]);
 
   const destinatarios: Destinatario[] = [];
@@ -209,7 +226,14 @@ export async function executarRelatorioSemanal(
     destinatarios.push(...ligarGrupos(linhas, papel, cadastro as never));
   }
 
-  const resumo = await enviarResumos(deps, config, destinatarios, opcoes);
+  const urlPublica = (opcoes.urlPublica ?? (await import("@/lib/env")).env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  const gerarLink = async (d: Destinatario): Promise<string | null> => {
+    if (!d.id || !urlPublica) return null;
+    // Em teste, o link novo NÃO revoga o que o parceiro já tem: ensaio não derruba link de verdade.
+    const token = await criarLinkDeFechamento(admin, organizationId, d.id, agora, { revogarAnteriores: !config.teste });
+    return `${urlPublica}/fechamento/${token}`;
+  };
+  const resumo = await enviarResumos(deps, config, destinatarios, { pausaMs: opcoes.pausaMs, gerarLink });
   if (!config.teste && resumo.enviados > 0) {
     const sfy = ((org?.settings as { sfy?: Record<string, unknown> } | null)?.sfy ?? {}) as Record<string, unknown>;
     await admin

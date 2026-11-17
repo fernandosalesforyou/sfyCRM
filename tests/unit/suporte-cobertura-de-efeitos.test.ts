@@ -44,7 +44,7 @@ it("a varredura enxerga os handlers e as actions que ela diz cobrir",()=>{
 it("todo handler mutante do app declara guarda de suporte ou é infraestrutura identificada",()=>{
  const uncovered:string[]=[];
  for(const path of files("app/api/v1").filter(p=>p.endsWith("/route.ts"))){
-  if(/app\/api\/v1\/(cron|webhooks)\//.test(path)||path==="app/api/v1/system/agent/route.ts")continue; // segredo de máquina, sem actor/session cookie
+  if(/app\/api\/v1\/(cron|webhooks)\//.test(path)||path==="app/api/v1/system/agent/route.ts"||path==="app/api/v1/sfy/fechamento/[token]/route.ts")continue; // o link do parceiro é público: token no endereço, sem sessão e sem ator de suporte; // segredo de máquina, sem actor/session cookie
   // Provisionamento por sistema externo: Bearer do segredo da INSTALAÇÃO
   // (TENANT_PROVISIONING_SECRET), sem cookie nem ator — a mesma natureza das
   // linhas acima. Não há sessão de suporte para a guarda ler; chamá-la aqui

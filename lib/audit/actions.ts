@@ -1530,6 +1530,8 @@ export const AUDIT_ACTIONS = [
   "sfy.member_permission_changed",
   // sfy (Bloco C): contato, supervisor ou "ativo" de um parceiro/supervisor da distribuição.
   "sfy.distribuicao_cadastro_changed",
+  // sfy (Bloco D): o administrador tratou (ou recusou) um fechamento informado pelo parceiro.
+  "sfy.fechamento_decidido",
 ] as const;
 
 /** Um código de auditoria. Derivado de `AUDIT_ACTIONS` — não redigite a lista. */

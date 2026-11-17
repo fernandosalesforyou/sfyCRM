@@ -137,4 +137,16 @@ describe("isPublicPath", () => {
     expect(isPublicPath("/f")).toBe(false);
     expect(isPublicPath(`/f/${t}/obrigado/x`)).toBe(false);
   });
+
+  it("sfy: libera /fechamento/<token de 43> e a rota que recebe o pedido, e nada além", () => {
+    const t = "A".repeat(43);
+    expect(isPublicPath(`/fechamento/${t}`)).toBe(true);
+    expect(isPublicPath(`/api/v1/sfy/fechamento/${t}`)).toBe(true);
+    expect(isPublicPath(`/fechamento/${t}/x`)).toBe(false);
+    expect(isPublicPath(`/fechamento/${"A".repeat(42)}`)).toBe(false);
+    expect(isPublicPath("/fechamento")).toBe(false);
+    expect(isPublicPath(`/api/v1/sfy/fechamento/${t}/x`)).toBe(false);
+    expect(isPublicPath("/api/v1/sfy/relatorios")).toBe(false);
+    expect(isPublicPath("/api/v1/sfy/parceiros")).toBe(false);
+  });
 });
