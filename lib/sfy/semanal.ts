@@ -11,8 +11,8 @@
  * Entre dois envios reais passam no mínimo 6 dias (a rota roda toda segunda; um reinício do
  * agendador não repete).
  */
-import type { SupabaseClient } from "@supabase/supabase-js";
 
+import type { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePhoneBR } from "@/lib/channels/phone-variants";
 import { normalizaTexto } from "@/lib/sfy/distribuicao";
 import { dependenciasReais, type DependenciasDosAvisos } from "@/lib/sfy/avisos";
@@ -173,7 +173,7 @@ export function ligarGrupos(
 
 /** Executa o relatório semanal de uma organização. */
 export async function executarRelatorioSemanal(
-  admin: SupabaseClient,
+  admin: ReturnType<typeof createAdminClient>,
   organizationId: string,
   agora: Date,
   deps: DependenciasDosAvisos = dependenciasReais(admin, organizationId, "sfy-relatorio-semanal"),
