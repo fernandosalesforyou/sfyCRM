@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { gerarToken, hashDoToken, nomeCurto, tokenComFormaValida, valorEmCentavos, valoresDoParceiro } from "./fechamento";
+import { dataCurta, gerarToken, hashDoToken, nomeCurto, tokenComFormaValida, valorEmCentavos, valoresDoParceiro } from "./fechamento";
 
 describe("link de fechamento sfy", () => {
   it("token: forte, de forma validável e o hash não revela o token", () => {
@@ -37,5 +37,11 @@ describe("link de fechamento sfy", () => {
   it("acha os valores do parceiro pelo código, pelo rótulo ou pelo nome", () => {
     const opcoes = new Map([["op1", "9001 - Parceiro Fictício"], ["op2", "9002 - Outro"], ["9001", "9001"]]);
     expect(valoresDoParceiro(opcoes, { codigo: "9001", nome: "Parceiro Fictício" }).sort()).toEqual(["9001", "op1"]);
+  });
+
+  it("data curta em DD/MM/AAAA no fuso de Brasília (22h30 de SP não vira o dia seguinte)", () => {
+    expect(dataCurta("2026-11-03T01:30:00Z")).toBe("02/11/2026");
+    expect(dataCurta("2026-11-17T15:00:00Z")).toBe("17/11/2026");
+    expect(dataCurta("lixo")).toBe("");
   });
 });

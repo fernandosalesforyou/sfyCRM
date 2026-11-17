@@ -11,6 +11,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { fail } from "@/lib/api/wrappers";
 
 import { checkRateLimit } from "@/lib/ai/dispatcher/rate-limit";
+import { ipDoCliente } from "@/lib/http/ip-do-cliente";
 import { acharLinkValido, hashDoToken, registrarFechamento, tokenComFormaValida } from "@/lib/sfy/fechamento";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
   const { token } = await ctx.params;
   if (!tokenComFormaValida(token)) return fail("not_found", "Not found", 404, { requestId });
 
-  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || "sem-ip";
+  const ip = ipDoCliente(req.headers) ?? "sem-ip";
   const [porLink, porIp] = await Promise.all([
     checkRateLimit(`sfy_fechamento:${hashDoToken(token).slice(0, 16)}`, 30, 60),
     checkRateLimit(`sfy_fechamento_ip:${ip}`, 60, 60),

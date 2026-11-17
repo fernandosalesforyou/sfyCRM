@@ -10,7 +10,7 @@ import { notFound } from "next/navigation";
 
 import { traduzir } from "@/lib/i18n/dicionario";
 import { idiomaDoVisitante } from "@/lib/i18n/idiomaAnonimo";
-import { acharLinkValido, negociosDoParceiro } from "@/lib/sfy/fechamento";
+import { acharLinkValido, dataCurta, negociosDoParceiro } from "@/lib/sfy/fechamento";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +67,7 @@ export default async function PaginaDeFechamento({ params, searchParams }: Props
               <p className="text-sm text-neutral-600">
                 {[n.cidade, n.uf].filter(Boolean).join("/")}
                 {n.cidade || n.uf ? " · " : ""}
-                {t("recebido em")} {new Date(n.recebido_em).toLocaleDateString("pt-BR")}
+                {t("recebido em")} {dataCurta(n.recebido_em)}
               </p>
               {n.ja_informado ? (
                 <p className="mt-3 text-sm text-neutral-700">{t("Fechamento informado, aguardando conferência.")}</p>

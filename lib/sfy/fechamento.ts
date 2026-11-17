@@ -13,6 +13,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
 import type { createAdminClient } from "@/lib/supabase/admin";
+import { rotuloDoContato, SEM_NOME } from "@/lib/contacts/rotulo-do-contato";
 import { normalizaTexto } from "@/lib/sfy/distribuicao";
 import { chavesDoCampo, rotulosDasOpcoes } from "@/lib/sfy/relatorios";
 
@@ -49,6 +50,19 @@ export function valorEmCentavos(texto: string): number | null {
   else return null;
   const centavos = Math.round(Number(normal) * 100);
   return Number.isFinite(centavos) && centavos > 0 && centavos <= VALOR_MAXIMO_CENTAVOS ? centavos : null;
+}
+
+/** O nome do contato pela régua única do produto; sem nome apresentável, o título do negócio. */
+function rotuloEscolhido(contato: { name?: string | null; display_name?: string | null } | null | undefined, titulo: string | null): string {
+  const r = rotuloDoContato(contato ?? {});
+  return r === SEM_NOME ? (titulo ?? "") : r;
+}
+
+/** Data curta DD/MM/AAAA no fuso de Brasília, sem fixar um idioma de tela (a página é pública). */
+export function dataCurta(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-GB", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
 }
 
 /** "Maria da Silva" → "Maria S."; um nome só fica como está. Nunca devolve telefone nem e-mail. */
@@ -181,7 +195,7 @@ export async function negociosDoParceiro(admin: Admin, parceiro: ParceiroDoLink)
       const cf = l.custom_fields ?? {};
       return {
         id: l.id,
-        nome: nomeCurto(c?.name || c?.display_name || l.title),
+        nome: nomeCurto(rotuloEscolhido(c, l.title)),
         cidade: typeof cf.cidade === "string" ? cf.cidade : "",
         uf: typeof cf.uf === "string" ? cf.uf : "",
         recebido_em: l.created_at,
