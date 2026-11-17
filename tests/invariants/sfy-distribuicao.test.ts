@@ -65,13 +65,13 @@ beforeAll(() => {
       ('${supLeo}', '${orgA}', 'Leo Fictício', 'climabrisa', '{}', false),
       ('${supCarol}', '${orgA}', 'Carol Fictícia', 'climabrisa', '{}', false),
       ('${supB}', '${orgB}', 'Supervisor da B', 'agro', '{}', true);
-    insert into public.sfy_parceiros (id, organization_id, codigo, nome, whatsapp, email, supervisor_id, ativo) values
-      ('${parA}', '${orgA}', '9001', 'Parceiro A Fictício', '+5511900000001', null, '${supLeo}', true),
-      ('${parB}', '${orgA}', '9002', 'Parceiro B Fictício', null, 'b@invariant.test', '${supLeo}', true),
-      ('${parInativo}', '${orgA}', '9003', 'Parceiro Inativo', '+5511900000003', null, '${supLeo}', false),
-      ('${parSemContato}', '${orgA}', '9004', 'Parceiro Sem Contato', null, null, '${supLeo}', true),
-      ('${parUnico}', '${orgA}', '9005', 'Parceiro Único', '+5511900000005', null, '${supCarol}', true),
-      ('${parOrgB}', '${orgB}', '9001', 'Parceiro da B', '+5511900000099', null, null, true);
+    insert into public.sfy_parceiros (id, organization_id, codigo, nome, whatsapp, email, supervisor_id, ativo, certificado, recebe_leads) values
+      ('${parA}', '${orgA}', '9001', 'Parceiro A Fictício', '+5511900000001', null, '${supLeo}', true, true, true),
+      ('${parB}', '${orgA}', '9002', 'Parceiro B Fictício', null, 'b@invariant.test', '${supLeo}', true, true, true),
+      ('${parInativo}', '${orgA}', '9003', 'Parceiro Inativo', '+5511900000003', null, '${supLeo}', false, true, false),
+      ('${parSemContato}', '${orgA}', '9004', 'Parceiro Sem Contato', null, null, '${supLeo}', true, true, true),
+      ('${parUnico}', '${orgA}', '9005', 'Parceiro Único', '+5511900000005', null, '${supCarol}', true, true, true),
+      ('${parOrgB}', '${orgB}', '9001', 'Parceiro da B', '+5511900000099', null, null, true, true, true);
     insert into public.sfy_parceiro_cidades (organization_id, parceiro_id, cidade_norm, uf) values
       ('${orgA}', '${parA}', 'sao jose do rio preto', 'SP'),
       ('${orgA}', '${parB}', 'sao jose do rio preto', 'SP'),
