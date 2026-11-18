@@ -39,6 +39,17 @@ interface SendArgs {
   html: string;
   text?: string;
   replyTo?: string;
+  /** Cópia e cópia oculta (sfy, e-mail do usuário pelo CRM). Endereços já validados por quem chama. */
+  cc?: string[];
+  bcc?: string[];
+  /** Anexos em base64 (sfy). */
+  attachments?: { filename: string; content: string; contentType?: string }[];
+  /**
+   * Endereço de remetente que SUBSTITUI o `RESEND_FROM_EMAIL` (sfy: o e-mail do usuário, sempre
+   * num domínio já verificado — quem chama confere). Passa pelo mesmo `fromAddress`, que recusa
+   * caractere de cabeçalho.
+   */
+  fromEndereco?: string;
   tags?: { name: string; value: string }[];
   headers?: Record<string, string>;
   /**
@@ -128,7 +139,7 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
     valorDaInstalacao("RESEND_FROM_EMAIL"),
   ]);
   const client = criarCliente(chave.valor);
-  const from = fromAddress(remetente.valor, args.fromName);
+  const from = fromAddress(args.fromEndereco ?? remetente.valor, args.fromName);
 
   if (!client || !from) {
     if (process.env.NODE_ENV !== "production") {
@@ -152,6 +163,9 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
       html: args.html,
       text: args.text,
       replyTo: args.replyTo,
+      ...(args.cc?.length ? { cc: args.cc } : {}),
+      ...(args.bcc?.length ? { bcc: args.bcc } : {}),
+      ...(args.attachments?.length ? { attachments: args.attachments } : {}),
       tags: args.tags,
       headers: args.headers,
     });

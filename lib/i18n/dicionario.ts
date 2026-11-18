@@ -43,6 +43,17 @@ import { TEXTOS_CONTRATACAO } from "./contratacao";
 type Traducoes = Record<string, Partial<Record<Exclude<Idioma, "pt-BR">, string>>>;
 
 export const DICIONARIO: Traducoes = {
+  // sfy (etapa 9): e-mail do usuário pelo CRM.
+  "E-mail enviado. Você recebe uma cópia na sua caixa.": { es: "Correo enviado. Usted recibe una copia en su buzón." },
+  "Não foi possível enviar o e-mail.": { es: "No fue posible enviar el correo." },
+  "Os anexos passam de 3 MB no total (ou de 5 arquivos).": { es: "Los adjuntos superan los 3 MB en total (o los 5 archivos)." },
+  "Escrever e-mail": { es: "Escribir correo" },
+  "Sai em nome de": { es: "Sale en nombre de" },
+  "A resposta do cliente chega na sua caixa e você recebe uma cópia do que enviar.": { es: "La respuesta del cliente llega a su buzón y usted recibe una copia de lo que envíe." },
+  "Para": { es: "Para" },
+  "Cópia (opcional)": { es: "Copia (opcional)" },
+  "Anexos (até 3 MB no total)": { es: "Adjuntos (hasta 3 MB en total)" },
+  "O envio de e-mail ainda não foi configurado neste CRM.": { es: "El envío de correo aún no está configurado en este CRM." },
   ...TEXTOS_CONTRATACAO,
   ...TEXTOS_CADENCIAS_ORIGINAIS,
   ...TEXTOS_CADENCIAS,

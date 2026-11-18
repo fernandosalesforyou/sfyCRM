@@ -13,6 +13,7 @@ import type { Stage } from "@/lib/kanban/types";
 import { ContatoDoNegocio } from "./ContatoDoNegocio";
 import { AtalhosDoNegocio } from "./AtalhosDoCard";
 import { ConversaNoDossie } from "./ConversaNoDossie";
+import { EscreverEmailDoUsuario } from "./EscreverEmailDoUsuario";
 import { LeadFieldsForm, type ControleDosCamposDoNegocio } from "./LeadFieldsForm";
 import { RevisaoDoDocumento } from "./RevisaoDoDocumento";
 import { ScoreSlot } from "./ScoreSlot";
@@ -261,6 +262,8 @@ export function LeadDossier({
             telefone e colar no softphone. Sem atalho configurado, nada é
             desenhado — nem separador, nem faixa vazia. */}
         <AtalhosDoNegocio atalhos={atalhosDoCard} lead={lead} contactId={lead.contact_id} />
+
+        <EscreverEmailDoUsuario leadId={lead.id} emailDoContato={lead.contact_email} podeEnviar={podeEditarTarefas} />
 
         <ConversaNoDossie
           conversa={lead.conversa}

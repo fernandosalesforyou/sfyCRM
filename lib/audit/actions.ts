@@ -1532,6 +1532,8 @@ export const AUDIT_ACTIONS = [
   "sfy.distribuicao_cadastro_changed",
   // sfy (Bloco D): o administrador tratou (ou recusou) um fechamento informado pelo parceiro.
   "sfy.fechamento_decidido",
+  // sfy (etapa 9): e-mail enviado pelo usuário a partir do negócio (sem endereço nem corpo).
+  "sfy.email_enviado",
 ] as const;
 
 /** Um código de auditoria. Derivado de `AUDIT_ACTIONS` — não redigite a lista. */
