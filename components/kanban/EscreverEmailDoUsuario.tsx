@@ -57,17 +57,22 @@ export function EscreverEmailDoUsuario({ leadId, emailDoContato, podeEnviar }: P
   useEffect(() => {
     if (!podeEnviar) return;
     let vivo = true;
-    fetch("/api/v1/sfy/email/situacao", { credentials: "same-origin" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        if (vivo && j?.data) {
-          setConfigurado(Boolean(j.data.configurado));
-          setDe((j.data.de as string | null) ?? null);
-        }
-      })
-      .catch(() => undefined);
+    // Adiado de propósito: a situação do e-mail é secundária e não pode ser a primeira chamada
+    // do dossiê (o dossiê carrega primeiro a revisão do documento).
+    const adiado = setTimeout(() => {
+      fetch("/api/v1/sfy/email/situacao", { credentials: "same-origin" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => {
+          if (vivo && j?.data) {
+            setConfigurado(Boolean(j.data.configurado));
+            setDe((j.data.de as string | null) ?? null);
+          }
+        })
+        .catch(() => undefined);
+    }, 0);
     return () => {
       vivo = false;
+      clearTimeout(adiado);
     };
   }, [podeEnviar]);
 
