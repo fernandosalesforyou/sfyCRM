@@ -3,7 +3,7 @@
  *
  * Onde a empresa confere para quem o CRM encaminha cada cliente: o contato de cada parceiro
  * e supervisor, a quem cada parceiro responde e quem está fora do rodízio. Gerente vê; só
- * administrador edita (a rota confere de novo). A carga inicial vem do mapa, por script.
+ * administrador edita (a rota confere de novo). A carga inicial vem da planilha conferida pela cliente.
  */
 import { redirect } from "next/navigation";
 
@@ -29,7 +29,7 @@ export default async function ParceirosPage() {
         <h1 className="text-2xl font-semibold tracking-tight">{t("Parceiros e supervisores")}</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           {t(
-            "Para quem o CRM encaminha cada cliente. Parceiro sem WhatsApp e sem e-mail fica fora do rodízio até ter um contato. Desmarcar \"Ativo\" tira o parceiro do rodízio sem apagar o cadastro.",
+            "Os parceiros do CRM são a lista oficial. Só quem está \"Certificado, recebe leads\" entra no rodízio; nos outros casos o lead da região vai para o supervisor. Parceiro sem WhatsApp e sem e-mail também fica fora até ter um contato.",
           )}
         </p>
       </header>
