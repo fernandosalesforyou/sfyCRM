@@ -26,6 +26,7 @@ export type MotivoDoDestino =
   | "parceiro_unico"
   | "rodizio"
   | "supervisor_da_cidade"
+  | "supervisor_padrao"
   | "sem_destino";
 
 export interface DestinoEscolhido {
@@ -38,6 +39,10 @@ export interface DestinoEscolhido {
   supervisor_id?: string | null;
   supervisor_nome?: string | null;
   supervisor_user_id?: string | null;
+  /** Simulação: nada foi gravado, o rodízio não andou. */
+  simulacao?: boolean;
+  /** Parceiros elegíveis na cidade, na ordem do rodízio (o primeiro é o próximo). */
+  elegiveis?: { codigo: string; nome: string }[];
 }
 
 export interface ContextoDaDistribuicao {

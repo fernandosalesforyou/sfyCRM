@@ -74851,7 +74851,7 @@ begin
        and not exists (select 1 from elegivel e where e.cidade_norm = pc.cidade_norm and e.uf = pc.uf)
      order by pc.cidade_norm, pc.uf, s.nome, p.codigo
   ),
-  pontos as (
+  pontos as materialized (
     select p.supervisor_id, m.latitude as lat, m.longitude as lon
       from public.sfy_parceiro_cidades pc
       join public.sfy_parceiros p on p.id = pc.parceiro_id
@@ -74859,8 +74859,9 @@ begin
       join public.sfy_municipios m on m.nome_norm = pc.cidade_norm and m.uf = pc.uf
      where pc.organization_id = p_org and p.ativo and p.categoria = 'climabrisa'
   ),
-  restantes as (
-    select m.nome_norm as cidade_norm, m.uf, m.latitude as lat, m.longitude as lon
+  restantes as materialized (
+    select m.nome_norm as cidade_norm, m.uf, m.latitude as lat, m.longitude as lon,
+           cos(radians(m.latitude)) as coslat
       from public.sfy_municipios m
      where not exists (select 1 from elegivel e where e.cidade_norm = m.nome_norm and e.uf = m.uf)
        and not exists (select 1 from dono d where d.cidade_norm = m.nome_norm and d.uf = m.uf)
@@ -74868,11 +74869,15 @@ begin
   novas as (
     select d.cidade_norm, d.uf, d.supervisor_id from dono d
     union all
-    select r.cidade_norm, r.uf,
-           (select pt.supervisor_id from pontos pt
-             order by power(pt.lat - r.lat, 2) + power((pt.lon - r.lon) * cos(radians(r.lat)), 2)
-             limit 1)
+    select r.cidade_norm, r.uf, n.supervisor_id
       from restantes r
+     cross join lateral (
+       select pt.supervisor_id
+         from pontos pt
+        order by (pt.lat - r.lat) * (pt.lat - r.lat)
+               + ((pt.lon - r.lon) * r.coslat) * ((pt.lon - r.lon) * r.coslat)
+        limit 1
+     ) n
   )
   select p_org, n.cidade_norm, n.uf, n.supervisor_id
     from novas n

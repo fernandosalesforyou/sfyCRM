@@ -86,7 +86,7 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  sql(`delete from public.sfy_municipios where codigo_ibge between 99900001 and 99900009;`);
+  sql(`delete from public.sfy_municipios where codigo_ibge between 99900001 and 99900009 or uf = 'ZX';`);
 });
 
 describe("sfy-cadastro — recebe leads exige ativo e certificado", () => {
@@ -228,5 +228,28 @@ describe("sfy-cadastro — apelidos e municípios: isolamento e escrita só pelo
     expect(recusado(`insert into public.sfy_municipios (codigo_ibge, nome, nome_norm, uf, latitude, longitude) values (99900009, 'x', 'x', 'ZZ', 0, 0);`)).toBe(true);
     expect(recusado(`select public.fn_sfy_recalcular_cidades_supervisor('${orgA}');`)).toBe(true);
     expect(recusado(`select public.fn_sfy_escolher_destino('${orgA}', 'climabrisa', 'x', 'ZZ', true);`)).toBe(true);
+  });
+});
+
+describe("sfy-cadastro — o recálculo cabe no tempo do PostgREST (8 s)", () => {
+  it("com a escala do Brasil (~5.500 municípios, ~2.700 cidades de parceiros) termina em poucos segundos", () => {
+    const orgP = randomUUID();
+    const supP = randomUUID();
+    sql(`insert into public.organizations (id, slug, legal_name, display_name) values ('${orgP}', '${orgP}', 'Sfy', 'Sfy');
+      insert into public.sfy_supervisores (id, organization_id, nome, categoria) values ('${supP}', '${orgP}', 'Sup P', 'climabrisa');
+      insert into public.sfy_municipios (codigo_ibge, nome, nome_norm, uf, latitude, longitude)
+        select 99910000 + i, 'cx' || i, 'cx' || i, 'ZX', (i % 70) - 35, (i / 70) - 70 from generate_series(1, 5500) i;
+      with p as (
+        insert into public.sfy_parceiros (organization_id, codigo, nome, whatsapp, supervisor_id, ativo, certificado, recebe_leads)
+        select '${orgP}', 'p' || n, 'P' || n, '+5511900000000', '${supP}', true, true, (n % 2 = 0) from generate_series(1, 60) n
+        returning id, codigo)
+      insert into public.sfy_parceiro_cidades (organization_id, parceiro_id, cidade_norm, uf)
+        select '${orgP}', p.id, 'cx' || ((substr(p.codigo, 2)::int - 1) * 45 + k), 'ZX' from p, generate_series(1, 45) k;`);
+    const inicio = Date.now();
+    const r = JSON.parse(sql(`select public.fn_sfy_recalcular_cidades_supervisor('${orgP}');`));
+    const ms = Date.now() - inicio;
+    expect(r.cidades_com_supervisor).toBeGreaterThan(2000);
+    // Antes da materialização dos pontos o mesmo cálculo levava ~27 s (e o PostgREST corta em 8 s).
+    expect(ms).toBeLessThan(6000);
   });
 });
