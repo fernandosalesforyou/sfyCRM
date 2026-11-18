@@ -26,6 +26,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { validateRequest } from "@/lib/schemas";
 import { camposDaSituacao, codigoValido, dataValida, SITUACOES, type Situacao } from "@/lib/sfy/cadastro";
+import { sincronizarOpcoesDosParceiros } from "@/lib/sfy/opcoes-parceiro";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -100,6 +101,19 @@ async function recalcular(admin: ReturnType<typeof createAdminClient>, org: stri
   const { data, error } = await admin.rpc("fn_sfy_recalcular_cidades_supervisor", { p_org: org });
   if (error) return { erro: "recalculo_falhou" };
   return (data ?? {}) as Record<string, unknown>;
+}
+
+/** Mantém a lista do campo "Parceiro responsável" igual ao cadastro. Falha aqui não derruba a edição. */
+async function sincronizarOpcoes(
+  admin: ReturnType<typeof createAdminClient>,
+  org: string,
+  codigo: string,
+): Promise<Record<string, unknown>> {
+  try {
+    return { ...(await sincronizarOpcoesDosParceiros(admin, org, [codigo])) };
+  } catch {
+    return { erro: "opcoes_falhou" };
+  }
 }
 
 function erroDeValidacao(err: unknown, requestId: string): Response {
@@ -187,7 +201,7 @@ export async function PUT(req: NextRequest): Promise<Response> {
   const tabela = input.tipo === "parceiro" ? "sfy_parceiros" : "sfy_supervisores";
   const { data: anterior } = await admin
     .from(tabela)
-    .select(input.tipo === "parceiro" ? "whatsapp, email, ativo, certificado, recebe_leads, saiu_em" : "whatsapp, email, ativo, categoria")
+    .select(input.tipo === "parceiro" ? "codigo, whatsapp, email, ativo, certificado, recebe_leads, saiu_em" : "whatsapp, email, ativo, categoria")
     .eq("organization_id", org)
     .eq("id", input.id)
     .maybeSingle();
@@ -255,6 +269,11 @@ export async function PUT(req: NextRequest): Promise<Response> {
   // Mexeu em quem pode receber lead (ou em quem supervisiona)? O supervisor das cidades se refaz.
   const mexeNoDestino = ["ativo", "recebe_leads", "certificado", "supervisor_id", "whatsapp", "email"].some((k) => k in patch);
   const recalculo = mexeNoDestino ? await recalcular(admin, org) : null;
+  // Renomear ou dar saída muda o rótulo da opção que os negócios usam (o valor, o código, não muda).
+  const opcoes =
+    input.tipo === "parceiro" && ("nome" in patch || "ativo" in patch)
+      ? await sincronizarOpcoes(admin, org, antes.codigo as string)
+      : null;
 
   await audit({
     action: "sfy.distribuicao_cadastro_changed",
@@ -272,7 +291,7 @@ export async function PUT(req: NextRequest): Promise<Response> {
     },
   });
 
-  return ok({ id: input.id, recalculo }, { requestId });
+  return ok({ id: input.id, recalculo, opcoes }, { requestId });
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
@@ -339,5 +358,6 @@ export async function POST(req: NextRequest): Promise<Response> {
     metadata: { tipo: "parceiro", criado: true, situacao: input.situacao ?? "nao_certificado" },
   });
 
-  return ok({ id: criado.id }, { requestId, status: 201 });
+  const opcoes = await sincronizarOpcoes(admin, org, input.codigo);
+  return ok({ id: criado.id, opcoes }, { requestId, status: 201 });
 }

@@ -398,10 +398,11 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
   });
 
   const salvar = useMutation({
-    mutationFn: (e: Edicao) => apiClient.put<{ data: { recalculo?: { erro?: string } | null } }>(ROTA, e),
+    mutationFn: (e: Edicao) => apiClient.put<{ data: { recalculo?: { erro?: string } | null; opcoes?: { erro?: string } | null } }>(ROTA, e),
     onSuccess: (r) => {
       toast.success(t("Cadastro atualizado."));
       if (r.data.recalculo?.erro) toast.warning(t("Salvo, mas o supervisor das cidades não foi recalculado. Tente de novo."));
+      if (r.data.opcoes?.erro) toast.warning(t("Salvo, mas a lista de parceiros dos negócios não foi atualizada. Tente de novo."));
       void qc.invalidateQueries({ queryKey: CHAVE });
     },
     onError: (e) => {

@@ -14128,6 +14128,7 @@ export const DICIONARIO: Traducoes = {
   "Material não encontrado.": { es: "Material no encontrado." },
   "Move cross-pipeline não é permitido. Use POST /api/v1/leads/[id]/clone para levar o negócio a outro funil.": { es: "No se permite mover entre embudos. Usa POST /api/v1/leads/[id]/clone para llevar el negocio a otro embudo." },
   "Salvo, mas o supervisor das cidades não foi recalculado. Tente de novo.": { es: "Guardado, pero el supervisor de las ciudades no se recalculó. Inténtalo de nuevo." },
+  "Salvo, mas a lista de parceiros dos negócios não foi atualizada. Tente de novo.": { es: "Guardado, pero la lista de socios de los negocios no se actualizó. Inténtalo de nuevo." },
   "Nada para alterar.": { es: "No hay nada que modificar." },
   "Nenhum arquivo foi enviado.": { es: "No se envió ningún archivo." },
   "Nenhum lead acessível na operação.": { es: "No hay ningún lead accesible en la operación." },
