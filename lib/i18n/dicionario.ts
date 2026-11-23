@@ -20555,6 +20555,23 @@ export const DICIONARIO: Traducoes = {
   "A Meta bloqueou temporariamente o envio deste número por violação de política (código 368). Veja o motivo no Gerenciador do WhatsApp, na Meta.": { es: "Meta bloqueó temporalmente el envío de este número por infringir sus políticas (código 368). Mira el motivo en el Administrador de WhatsApp, en Meta." },
   "A Meta está recusando mensagens deste número (código {codigo}).": { es: "Meta está rechazando mensajes de este número (código {codigo})." },
   "Este aviso fecha sozinho quando uma mensagem voltar a ser entregue.": { es: "Este aviso se cierra solo cuando un mensaje vuelva a entregarse." },
+  // sfy (etapa 10): bloco Pós-venda do negócio.
+  "Não foi possível concluir.": { es: "No fue posible completar." },
+  "Aguardando o link de rastreio": { es: "Esperando el enlace de seguimiento" },
+  "Pós-venda": { es: "Posventa" },
+  "NF-e": { es: "Factura electrónica" },
+  "entregue em": { es: "entregado el" },
+  "Rastreio enviado": { es: "Seguimiento enviado" },
+  "Pergunta da instalação": { es: "Pregunta de instalación" },
+  "instalado em": { es: "instalado el" },
+  "Lembrete de manutenção": { es: "Recordatorio de mantenimiento" },
+  "Avisar sem rastreio": { es: "Avisar sin seguimiento" },
+  "Colar o link de rastreio": { es: "Pegar el enlace de seguimiento" },
+  "Marcar como instalado": { es: "Marcar como instalado" },
+  "Este negócio ainda não entrou no pós-venda.": { es: "Este negocio aún no entró en la posventa." },
+  "Só dá para retomar uma sequência pausada.": { es: "Solo se puede reanudar una secuencia en pausa." },
+  "O link precisa ser https e do endereço da Climabrisa.": { es: "El enlace debe ser https y de la dirección de Climabrisa." },
+  "O aviso de rastreio já foi enviado.": { es: "El aviso de seguimiento ya fue enviado." },
 };
 
 

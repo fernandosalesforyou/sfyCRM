@@ -1534,6 +1534,8 @@ export const AUDIT_ACTIONS = [
   "sfy.fechamento_decidido",
   // sfy (etapa 9): e-mail enviado pelo usuário a partir do negócio (sem endereço nem corpo).
   "sfy.email_enviado",
+  // sfy (etapa 10): ação do atendente na sequência de pós-venda (pausar, colar link, etc.).
+  "sfy.pos_venda_acao",
 ] as const;
 
 /** Um código de auditoria. Derivado de `AUDIT_ACTIONS` — não redigite a lista. */
