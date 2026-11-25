@@ -51,4 +51,31 @@ revoke all on public.sfy_pedidos_pos_venda from anon;
 revoke all on public.sfy_pedidos_pos_venda from authenticated;
 grant select, insert, update, delete on public.sfy_pedidos_pos_venda to service_role;
 
+-- LGPD: contato anonimizado não recebe mais mensagem e o rastreio (que leva a endereço) some.
+-- O número da NF-e fica: é referência de documento fiscal.
+create or replace function public.fn_sfy_pos_venda_anonimizado()
+  returns trigger
+  language plpgsql
+  security definer
+  set search_path to 'public', 'pg_temp'
+as $$
+begin
+  update public.sfy_pedidos_pos_venda
+     set situacao = 'cancelada', link_rastreio = null, link_valido_ate = null, origem_link = null,
+         situacao_rastreio = '', venda_numero = '', ultimo_erro = '', atualizado_em = now()
+   where organization_id = new.organization_id and contact_id = new.id;
+  return new;
+end$$;
+
+revoke all on function public.fn_sfy_pos_venda_anonimizado() from public;
+revoke execute on function public.fn_sfy_pos_venda_anonimizado() from anon;
+revoke execute on function public.fn_sfy_pos_venda_anonimizado() from authenticated;
+
+drop trigger if exists trg_contacts_anonimizado_sfy_pos_venda on public.contacts;
+create trigger trg_contacts_anonimizado_sfy_pos_venda
+  after update of is_anonymized on public.contacts
+  for each row
+  when (new.is_anonymized = true and coalesce(old.is_anonymized, false) = false)
+  execute function public.fn_sfy_pos_venda_anonimizado();
+
 notify pgrst, 'reload schema';

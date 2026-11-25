@@ -472,6 +472,8 @@ const schema = z.object({
    */
   MICROSYS_API_URL: z.string().optional().default(""),
   MICROSYS_API_TOKEN: z.string().optional().default(""),
+  // Domínio da empresa (sem https): único aceito no link de rastreio e excluído como e-mail de cliente.
+  SFY_DOMINIO_DA_EMPRESA: z.string().optional().default(""),
 
   /**
    * SMTP — o SEGUNDO transporte de e-mail, ao lado da Resend, nunca no lugar

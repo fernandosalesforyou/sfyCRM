@@ -9,7 +9,7 @@
  * real. Dados pessoais do cliente que a ponte devolva são IGNORADOS de propósito: o contato é
  * sempre o do CRM (o Microsys às vezes traz o e-mail da própria Climabrisa como "cliente").
  *
- * Segurança: o link só é aceito se for https e do domínio da Climabrisa. Um erro (ou invasão)
+ * Segurança: o link só é aceito se for https e do domínio da empresa (SFY_DOMINIO_DA_EMPRESA). Um erro (ou invasão)
  * da ponte nunca faz o CRM mandar um link estranho ao cliente.
  */
 
@@ -32,6 +32,8 @@ export class PonteIndisponivel extends Error {
 export interface ConfigDaPonte {
   url: string;
   token: string;
+  /** Domínio da empresa: o único aceito no link de rastreio. */
+  dominio: string;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 }
@@ -57,24 +59,26 @@ function dataOuNula(v: unknown): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/** Só https e só o domínio da Climabrisa (ou subdomínio dele). */
-export function linkPermitido(link: string): boolean {
+/** Só https e só o domínio informado (ou subdomínio dele). Sem domínio configurado, nada passa. */
+export function linkPermitido(link: string, dominio: string): boolean {
+  const alvo = dominio.trim().toLowerCase();
+  if (!alvo) return false;
   try {
     const u = new URL(link);
     if (u.protocol !== "https:" || u.username || u.password) return false;
-    return u.hostname === "climabrisa.com.br" || u.hostname.endsWith(".climabrisa.com.br");
+    return u.hostname === alvo || u.hostname.endsWith(`.${alvo}`);
   } catch {
     return false;
   }
 }
 
-export function lerResposta(corpo: unknown, agora: Date = new Date()): ConsultaNfe {
+export function lerResposta(corpo: unknown, dominio: string, agora: Date = new Date()): ConsultaNfe {
   const raiz = obj(corpo);
   const dados = obj(raiz.data ?? raiz.resultado ?? raiz);
   const rastreio = obj(dados.rastreio ?? dados.tracking);
 
   const bruto = primeiroTexto(dados.link_rastreio, dados.linkRastreio, rastreio.link, rastreio.url, dados.link, dados.url);
-  const link = bruto && linkPermitido(bruto) ? bruto : null;
+  const link = bruto && linkPermitido(bruto, dominio) ? bruto : null;
   const situacao = primeiroTexto(rastreio.situacao, rastreio.status, dados.situacao_rastreio, dados.situacao, dados.status).slice(0, 120);
   const entregue = /entregue/i.test(situacao);
   const entregueEm = dataOuNula(primeiroTexto(dados.entregue_em, dados.data_entrega, rastreio.entregue_em)) ?? (entregue ? agora : null);
@@ -90,7 +94,7 @@ export function lerResposta(corpo: unknown, agora: Date = new Date()): ConsultaN
 }
 
 export async function consultarNfe(cfg: ConfigDaPonte, numero: string, serie = ""): Promise<ConsultaNfe> {
-  if (!cfg.url || !cfg.token) throw new PonteIndisponivel("ponte_nao_configurada");
+  if (!cfg.url || !cfg.token || !cfg.dominio) throw new PonteIndisponivel("ponte_nao_configurada");
   const base = cfg.url.replace(/\/$/, "");
   // http só para teste local (ponte falsa em localhost); em qualquer outro endereço exige https.
   const local = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(base);
@@ -109,7 +113,7 @@ export async function consultarNfe(cfg: ConfigDaPonte, numero: string, serie = "
     if (res.status === 429) throw new PonteIndisponivel("ponte_limite_de_consultas");
     if (res.status === 401 || res.status === 403) throw new PonteIndisponivel("ponte_recusou_o_token");
     if (!res.ok) throw new PonteIndisponivel(`ponte_http_${res.status}`);
-    return lerResposta(await res.json());
+    return lerResposta(await res.json(), cfg.dominio);
   } catch (e) {
     if (e instanceof PonteIndisponivel) throw e;
     throw new PonteIndisponivel(e instanceof Error && e.name === "AbortError" ? "ponte_demorou" : "ponte_fora_do_ar");

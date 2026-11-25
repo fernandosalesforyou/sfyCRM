@@ -108,9 +108,9 @@ describe("dentroDoHorarioComercial (Brasília, seg-sáb, 9h-18h)", () => {
 
 describe("contato e textos", () => {
   it("descarta o e-mail da própria Climabrisa e o inválido", () => {
-    expect(emailDoCliente("Nota.Eletronica@climabrisa.com.br")).toBeNull();
-    expect(emailDoCliente("abc")).toBeNull();
-    expect(emailDoCliente(" Fulano@Exemplo.com ")).toBe("fulano@exemplo.com");
+    expect(emailDoCliente("Nota.Eletronica@climabrisa.com.br", "climabrisa.com.br")).toBeNull();
+    expect(emailDoCliente("abc", "climabrisa.com.br")).toBeNull();
+    expect(emailDoCliente(" Fulano@Exemplo.com ", "climabrisa.com.br")).toBe("fulano@exemplo.com");
   });
   it("primeiro nome com cuidado", () => {
     expect(primeiroNome("THIAGO SILVA")).toBe("Thiago");

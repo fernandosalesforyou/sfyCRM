@@ -69,6 +69,16 @@ describe("sfy-pos-venda (5011)", () => {
     expect(falha(comoMembro(ins(lead, "99999")))).toBe(true);
   });
 
+  it("anonimizar o contato cancela a sequência e apaga o link de rastreio", () => {
+    const contato = randomUUID();
+    sql(`insert into public.contacts (id, organization_id, name) values ('${contato}', '${org}', 'Pessoa Fictícia');
+      update public.sfy_pedidos_pos_venda set contact_id = '${contato}', situacao = 'ativa', link_rastreio = 'https://rastreio.exemplo.test/r/x' where lead_id = '${lead}';
+      update public.contacts set is_anonymized = true, anonymized_at = now() where id = '${contato}';`);
+    expect(
+      sql(`select situacao || '|' || coalesce(link_rastreio, 'sem-link') from public.sfy_pedidos_pos_venda where lead_id = '${lead}';`).trim(),
+    ).toBe("cancelada|sem-link");
+  });
+
   it("apagar o negócio leva o pedido junto", () => {
     sql(`delete from public.crm_leads where id = '${lead}';`);
     expect(sql(`select count(*) from public.sfy_pedidos_pos_venda where lead_id = '${lead}';`).trim()).toBe("0");

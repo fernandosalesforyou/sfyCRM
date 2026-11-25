@@ -20558,7 +20558,7 @@ export const DICIONARIO: Traducoes = {
   // sfy (etapa 10): bloco Pós-venda do negócio.
   "Não foi possível concluir.": { es: "No fue posible completar." },
   "Aguardando o link de rastreio": { es: "Esperando el enlace de seguimiento" },
-  "Pós-venda": { es: "Posventa" },
+  "Pós-venda do pedido": { es: "Posventa del pedido" },
   "NF-e": { es: "Factura electrónica" },
   "entregue em": { es: "entregado el" },
   "Rastreio enviado": { es: "Seguimiento enviado" },
@@ -20570,7 +20570,7 @@ export const DICIONARIO: Traducoes = {
   "Marcar como instalado": { es: "Marcar como instalado" },
   "Este negócio ainda não entrou no pós-venda.": { es: "Este negocio aún no entró en la posventa." },
   "Só dá para retomar uma sequência pausada.": { es: "Solo se puede reanudar una secuencia en pausa." },
-  "O link precisa ser https e do endereço da Climabrisa.": { es: "El enlace debe ser https y de la dirección de Climabrisa." },
+  "O link precisa ser https e do domínio da empresa.": { es: "El enlace debe ser https y del dominio de la empresa." },
   "O aviso de rastreio já foi enviado.": { es: "El aviso de seguimiento ya fue enviado." },
 };
 

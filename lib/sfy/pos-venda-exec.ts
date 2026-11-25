@@ -10,6 +10,7 @@
  *      (reivindicação atômica): duas rodadas simultâneas nunca mandam a mesma mensagem.
  * Modo de teste (`pos_venda_teste_telefone`): tudo vai SÓ para esse número; e-mail não sai.
  */
+import { nomeDoContato } from "@/lib/contacts/rotulo-do-contato";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { sendMessageHandler } from "@/app/api/v1/messages/_handler";
@@ -86,7 +87,7 @@ const CAMPO_DO_CARIMBO: Record<string, string> = {
 
 export function dependenciasReais(admin: Admin): DependenciasDoPosVenda {
   return {
-    consulta: (numero, serie) => consultarNfe({ url: env.MICROSYS_API_URL, token: env.MICROSYS_API_TOKEN }, numero, serie),
+    consulta: (numero, serie) => consultarNfe({ url: env.MICROSYS_API_URL, token: env.MICROSYS_API_TOKEN, dominio: env.SFY_DOMINIO_DA_EMPRESA }, numero, serie),
     enviaWhatsapp: async (organizationId, contactId, _para, m) => {
       const canalId = await sessaoProntaParaEnvio(admin, organizationId);
       if (!canalId) throw new Error("sem_canal_de_whatsapp");
@@ -243,10 +244,10 @@ async function enviarEtapa(
     : { data: null };
   if (!contato || contato.is_blocked || contato.is_anonymized) return parar("contato_indisponivel");
   const telefone = testeTelefone ?? ((contato.phone_number as string | null) || null);
-  const email = testeTelefone ? null : emailDoCliente(contato.email as string | null);
+  const email = testeTelefone ? null : emailDoCliente(contato.email as string | null, env.SFY_DOMINIO_DA_EMPRESA);
   if (!telefone && !email) return parar("contato_sem_telefone_nem_email");
 
-  const msg = montarMensagem(etapa, { nome: (contato.display_name ?? contato.name) as string | null, nfe: l.nfe_numero, link: (l.link_rastreio as string | null) ?? null });
+  const msg = montarMensagem(etapa, { nome: nomeDoContato(contato as { name: string | null; display_name: string | null }), nfe: l.nfe_numero, link: (l.link_rastreio as string | null) ?? null });
 
   // Reivindica o carimbo ANTES de enviar. Só quem muda de vazio para preenchido envia.
   const campo = CAMPO_DO_CARIMBO[etapa]!;

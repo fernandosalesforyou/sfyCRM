@@ -83,7 +83,7 @@ export function PosVendaDoNegocio({ leadId, podeAgir }: { leadId: string; podeAg
   return (
     <section className="rounded-md border p-3 text-sm space-y-2" data-testid="pos-venda">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-medium">{t("Pós-venda")}</h3>
+        <h3 className="font-medium">{t("Pós-venda do pedido")}</h3>
         <span className="text-muted-foreground">{rotulo[pedido.situacao]}</span>
       </div>
       <p className="text-muted-foreground">

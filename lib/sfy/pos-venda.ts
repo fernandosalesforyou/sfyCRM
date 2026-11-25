@@ -98,13 +98,12 @@ export function dentroDoHorarioComercial(agora: Date): boolean {
   return dia >= 1 && dia <= 6 && hora >= 9 && hora < 18;
 }
 
-const DOMINIO_DA_EMPRESA = "@climabrisa.com.br";
-
-/** O e-mail do cliente, nunca o da própria Climabrisa (a ponte já devolveu o remetente como "cliente"). */
-export function emailDoCliente(email: string | null | undefined): string | null {
+/** O e-mail do cliente, nunca um da própria empresa (a ponte já devolveu o remetente como "cliente"). */
+export function emailDoCliente(email: string | null | undefined, dominioDaEmpresa: string): string | null {
   const e = (email ?? "").trim().toLowerCase();
   if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return null;
-  if (e.endsWith(DOMINIO_DA_EMPRESA)) return null;
+  const dominio = dominioDaEmpresa.trim().toLowerCase();
+  if (dominio && e.endsWith(`@${dominio}`)) return null;
   return e;
 }
 

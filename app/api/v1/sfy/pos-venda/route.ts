@@ -20,6 +20,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { requireSupportWrite } from "@/lib/impersonate/support";
 import { validateRequest } from "@/lib/schemas";
+import { env } from "@/lib/env";
 import { linkPermitido } from "@/lib/sfy/microsys";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -93,7 +94,7 @@ export async function PATCH(req: NextRequest): Promise<Response> {
       mudanca = { situacao: p.msg1_em ? "ativa" : "aguardando_link", tentativas: 0, ultimo_erro: "" };
       break;
     case "colar_link":
-      if (!linkPermitido(input.link)) return fail("validation_error", t("O link precisa ser https e do endereço da Climabrisa."), 422, { requestId });
+      if (!linkPermitido(input.link, env.SFY_DOMINIO_DA_EMPRESA)) return fail("validation_error", t("O link precisa ser https e do domínio da empresa."), 422, { requestId });
       if (p.msg1_em) return fail("conflict", t("O aviso de rastreio já foi enviado."), 409, { requestId });
       mudanca = { link_rastreio: input.link, link_valido_ate: null, origem_link: "manual", ultimo_erro: "", ...(p.situacao === "pausada" ? { situacao: "aguardando_link", tentativas: 0 } : {}) };
       break;
