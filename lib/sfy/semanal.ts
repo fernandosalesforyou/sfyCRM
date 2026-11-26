@@ -17,6 +17,7 @@ import { normalizePhoneBR } from "@/lib/channels/phone-variants";
 import { normalizaTexto } from "@/lib/sfy/distribuicao";
 import { criarLinkDeFechamento } from "@/lib/sfy/fechamento";
 import { dependenciasReais, type DependenciasDosAvisos } from "@/lib/sfy/avisos";
+import { nomeAtualDe } from "@/lib/sfy/supervisores";
 import {
   chavesDoCampo,
   juntarPorGrupo,
@@ -208,7 +209,7 @@ export async function executarRelatorioSemanal(
   const { data: funis } = await admin.from("crm_pipelines").select("settings").eq("organization_id", organizationId);
   const [{ data: parceiros }, { data: supervisores }] = await Promise.all([
     admin.from("sfy_parceiros").select("id, codigo, nome, whatsapp, email, ativo").eq("organization_id", organizationId),
-    admin.from("sfy_supervisores").select("id, nome, whatsapp, email, ativo").eq("organization_id", organizationId),
+    admin.from("sfy_supervisores").select("id, nome, whatsapp, email, ativo, nomes_anteriores").eq("organization_id", organizationId),
   ]);
 
   const destinatarios: Destinatario[] = [];
@@ -222,7 +223,11 @@ export async function executarRelatorioSemanal(
       p_org: organizationId, p_de: de, p_ate: ate, p_chaves: chaves, p_incluir_historico: false,
     });
     const nomes = rotulosDasOpcoes(funis ?? [], rotuloDoCampo, normalizaTexto);
-    const linhas = juntarPorGrupo((data ?? []) as LinhaDestinoBruta[]).map((l) => ({ ...l, rotulo: nomes.get(l.grupo) ?? l.grupo }));
+    // Supervisor renomeado: os negócios antigos guardam o nome de antes; somam no nome atual.
+    const brutas = ((data ?? []) as LinhaDestinoBruta[]).map((l) =>
+      papel === "supervisor" ? { ...l, grupo: nomeAtualDe(supervisores ?? [], l.grupo) } : l,
+    );
+    const linhas = juntarPorGrupo(brutas).map((l) => ({ ...l, rotulo: nomes.get(l.grupo) ?? l.grupo }));
     destinatarios.push(...ligarGrupos(linhas, papel, cadastro as never));
   }
 

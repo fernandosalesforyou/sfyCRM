@@ -30,6 +30,7 @@ import {
 } from "@/lib/sfy/relatorios";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fusoUtilizavel } from "@/lib/tempo/fusos";
+import { nomeAtualDe } from "@/lib/sfy/supervisores";
 
 export const dynamic = "force-dynamic";
 
@@ -118,7 +119,12 @@ export async function GET(req: NextRequest): Promise<Response> {
       p_org: orgId, p_de: pDe, p_ate: pAte, p_chaves: chaves, p_incluir_historico: historico,
     });
     if (error) return fail("internal_error", error.message, 500, { requestId });
-    const brutas = (data ?? []) as LinhaDestinoBruta[];
+    let brutas = (data ?? []) as LinhaDestinoBruta[];
+    if (rotulo === ROTULO_DO_CAMPO.supervisor) {
+      // Supervisor renomeado: os negócios antigos guardam o nome de antes; somam no nome atual.
+      const { data: sups } = await supabase.from("sfy_supervisores").select("nome, nomes_anteriores").eq("organization_id", orgId);
+      brutas = brutas.map((l) => ({ ...l, grupo: nomeAtualDe(sups ?? [], l.grupo) }));
+    }
     const nomes = rotulosDasOpcoes(funis ?? [], rotulo, normalizaTexto);
     const linhas = juntarPorGrupo(brutas).map((l) => ({ ...l, rotulo: nomes.get(l.grupo) ?? l.grupo }));
     return ok(

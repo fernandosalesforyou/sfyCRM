@@ -107,6 +107,11 @@ function escapaRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** O que gravar no campo "Supervisor": a opção, quando é lista; o próprio nome, quando é texto livre. */
+export function valorDoSupervisor(campo: CustomFieldDef, nome: string): string | null {
+  return campo.type === "text" ? nome : opcaoDoSupervisor(campo, nome);
+}
+
 /** A etapa do funil de destino: "Em negociação por representante" ou "... por supervisor". */
 export function acharEtapaDeDestino(
   etapas: { id: string; name: string }[],
@@ -171,7 +176,7 @@ export async function distribuirNegocio(
   }
   if (destino.supervisor_nome) {
     const campo = acharCampoPorRotulo(campos, "Supervisor");
-    const valor = campo ? opcaoDoSupervisor(campo, destino.supervisor_nome) : null;
+    const valor = campo ? valorDoSupervisor(campo, destino.supervisor_nome) : null;
     if (campo && valor) patch[campo.key] = valor;
     else naoGravados.push("Supervisor");
   }
