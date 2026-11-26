@@ -3,7 +3,7 @@
  * sfy (fork Sales for You, Bloco C e etapa 7B) — painel de parceiros e supervisores.
  *
  * O CRM é a fonte de verdade dos parceiros: aqui a Mariana cria, renomeia, certifica, pausa e dá
- * saída; edita as cidades de cada um (da lista do IBGE) e confere "para quem vai este lead?" sem
+ * saída; edita as cidades de cada um (municípios do IBGE, distritos e povoados) e confere "para quem vai este lead?" sem
  * gastar a vez do rodízio. Cada parceiro é um cartão (cabe no celular); os campos de texto salvam
  * ao sair do campo e a situação, ao escolher.
  */
@@ -19,25 +19,13 @@ import { useT } from "@/hooks/i18n/useT";
 import { apiClient } from "@/lib/api/client";
 import { SITUACOES, situacaoDosCampos, type ImpactoDasCidades, type Situacao } from "@/lib/sfy/cadastro";
 import type { DestinoEscolhido } from "@/lib/sfy/distribuicao";
+import { UFS_DO_BRASIL as UFS } from "@/lib/sfy/supervisores";
+
+import { CAMPO, Contato, type Edicao, type Supervisor } from "./_comum";
+import { Supervisores } from "./_supervisores";
 
 const ROTA = "/api/v1/sfy/parceiros";
 const CHAVE = ["sfy", "parceiros"] as const;
-const UFS = [
-  "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI",
-  "PR", "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO",
-] as const;
-
-interface Supervisor {
-  id: string;
-  nome: string;
-  categoria: "climabrisa" | "agro";
-  whatsapp: string | null;
-  email: string | null;
-  user_id: string | null;
-  ufs: string[];
-  padrao: boolean;
-  ativo: boolean;
-}
 interface Parceiro {
   id: string;
   codigo: string;
@@ -55,15 +43,6 @@ interface Dados {
   parceiros: Parceiro[];
   municipios_carregados: boolean;
 }
-type Edicao = { tipo: "parceiro" | "supervisor"; id: string } & Partial<{
-  whatsapp: string | null;
-  email: string | null;
-  ativo: boolean;
-  supervisor_id: string | null;
-  nome: string;
-  situacao: Situacao;
-  padrao: boolean;
-}>;
 interface CidadeDoParceiro {
   uf: string;
   cidade_norm: string;
@@ -71,8 +50,6 @@ interface CidadeDoParceiro {
   codigo_ibge: number | null;
 }
 type Filtro = "todos" | "recebem" | "pausados" | "nao_certificados" | "sairam" | "sem_contato" | "sem_supervisor";
-
-const CAMPO = "min-h-11 w-full rounded-md border bg-background px-2 text-sm";
 
 function rotuloDaSituacao(s: Situacao, t: (x: string) => string): string {
   switch (s) {
@@ -102,33 +79,6 @@ function textoDoDestino(d: DestinoEscolhido, t: (x: string) => string): string {
     default:
       return t("Sem destino: a equipe decide.");
   }
-}
-
-function Contato({
-  valor,
-  rotulo,
-  desabilitado,
-  aoSalvar,
-}: {
-  valor: string | null;
-  rotulo: string;
-  desabilitado: boolean;
-  aoSalvar: (novo: string | null) => void;
-}) {
-  const [texto, setTexto] = useState(valor ?? "");
-  return (
-    <Input
-      className="min-h-11"
-      value={texto}
-      aria-label={rotulo}
-      disabled={desabilitado}
-      onChange={(e) => setTexto(e.target.value)}
-      onBlur={() => {
-        const novo = texto.trim() || null;
-        if (novo !== (valor ?? null)) aoSalvar(novo);
-      }}
-    />
-  );
 }
 
 /** "Para quem vai este lead?": simula o destino, sem gastar a vez do rodízio. */
@@ -271,7 +221,9 @@ function NovoParceiro({ supervisores, aoCriar }: { supervisores: Supervisor[]; a
   );
 }
 
-/** As cidades de um parceiro: lista, busca no IBGE e troca com aviso do impacto. */
+const semAcento = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+/** As cidades de um parceiro: lista, busca no IBGE (ou nome escrito) e troca com aviso do impacto. */
 function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parceiro: Parceiro; podeEditar: boolean; municipiosCarregados: boolean }) {
   const t = useT();
   const qc = useQueryClient();
@@ -293,7 +245,12 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
   });
 
   const trocar = useMutation({
-    mutationFn: (corpo: { adicionar?: number[]; remover?: number[]; remover_nomes?: { uf: string; cidade_norm: string }[] }) =>
+    mutationFn: (corpo: {
+      adicionar?: number[];
+      remover?: number[];
+      adicionar_livres?: { uf: string; nome: string }[];
+      remover_nomes?: { uf: string; cidade_norm: string }[];
+    }) =>
       apiClient.put<{ data: ImpactoDasCidades & { recalculo?: { erro?: string } } }>(rota, corpo),
     onSuccess: (r) => {
       toast.success(t("Cidades atualizadas."));
@@ -312,6 +269,14 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
   });
 
   const jaTem = new Set((atuais.data ?? []).map((c) => `${c.uf}|${c.cidade_norm}`));
+  const escrito = q.replace(/\s+/g, " ").trim();
+  // Oferece incluir o texto como distrito/povoado quando nenhum município tem exatamente este nome.
+  const podeIncluirEscrito =
+    uf.length === 2 &&
+    escrito.length >= 2 &&
+    achadas.data !== undefined &&
+    !achadas.data.some((m) => semAcento(m.nome) === semAcento(escrito)) &&
+    !jaTem.has(`${uf}|${semAcento(escrito)}`);
 
   return (
     <div className="flex flex-col gap-3 border-t pt-3">
@@ -359,9 +324,25 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
               {uf && achadas.data && achadas.data.length === 0 && (
                 <p className="text-sm text-muted-foreground">{t("Nenhuma cidade encontrada.")}</p>
               )}
+              {podeIncluirEscrito && (
+                <div className="flex flex-col items-start gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-auto min-h-11 whitespace-normal text-left"
+                    disabled={trocar.isPending}
+                    onClick={() => trocar.mutate({ adicionar_livres: [{ uf, nome: escrito }] }, { onSuccess: () => setQ("") })}
+                  >
+                    {t("Incluir como distrito ou povoado:")} {escrito} · {uf}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {t("Confira a grafia: o lead só é encontrado se a localidade for escrita do mesmo jeito (acentos e maiúsculas não importam).")}
+                  </p>
+                </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {(achadas.data ?? []).map((m) => {
-                  const tem = jaTem.has(`${m.uf}|${m.nome.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()}`);
+                  const tem = jaTem.has(`${m.uf}|${semAcento(m.nome)}`);
                   return (
                     <Button
                       key={m.codigo_ibge}
@@ -412,6 +393,7 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
   });
 
   const supervisoresClima = useMemo(() => (data?.supervisores ?? []).filter((s) => s.categoria === "climabrisa"), [data]);
+  const supervisoresAtivos = supervisoresClima.filter((s) => s.ativo);
   const parceiros = useMemo(() => {
     const termo = busca.trim().toLowerCase();
     return (data?.parceiros ?? []).filter((p) => {
@@ -429,6 +411,11 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">{t("Carregando...")}</p>;
 
   const todos = data.parceiros;
+  // Só quem ainda está na empresa conta como "parceiro do supervisor".
+  const porSupervisor = new Map<string, number>();
+  for (const p of todos) {
+    if (p.ativo && p.supervisor_id) porSupervisor.set(p.supervisor_id, (porSupervisor.get(p.supervisor_id) ?? 0) + 1);
+  }
   const contagem = {
     recebem: todos.filter((p) => situacaoDosCampos(p) === "certificado_recebe").length,
     semContato: todos.filter((p) => !p.whatsapp && !p.email).length,
@@ -445,50 +432,14 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
     <div className="flex flex-col gap-8">
       <Simulador />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">{t("Supervisores")}</h2>
-        <div className="flex flex-col gap-3">
-          {data.supervisores.map((s) => (
-            <Card key={s.id} className="grid gap-3 p-4 sm:grid-cols-[12rem_1fr_1fr_auto] sm:items-end">
-              <div>
-                <p className="font-medium">{s.nome}</p>
-                <p className="text-xs text-muted-foreground">
-                  {s.categoria === "agro"
-                    ? s.padrao
-                      ? t("Agro: demais estados")
-                      : `${t("Agro")}: ${s.ufs.join(", ")}`
-                    : t("Climabrisa")}
-                  {" · "}
-                  {s.user_id ? t("Ligado") : t("Ainda não ligado")}
-                </p>
-              </div>
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                {t("WhatsApp")}
-                <Contato valor={s.whatsapp} rotulo={`${t("WhatsApp")}: ${s.nome}`} desabilitado={!podeEditar || salvar.isPending}
-                  aoSalvar={(v) => salvar.mutate({ tipo: "supervisor", id: s.id, whatsapp: v })} />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                {t("E-mail")}
-                <Contato valor={s.email} rotulo={`${t("E-mail")}: ${s.nome}`} desabilitado={!podeEditar || salvar.isPending}
-                  aoSalvar={(v) => salvar.mutate({ tipo: "supervisor", id: s.id, email: v })} />
-              </label>
-              {s.categoria === "climabrisa" && (
-                <label className="flex min-h-11 items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    className="size-5"
-                    checked={s.padrao}
-                    disabled={!podeEditar || salvar.isPending}
-                    aria-label={`${t("Supervisor padrão")}: ${s.nome}`}
-                    onChange={(e) => salvar.mutate({ tipo: "supervisor", id: s.id, padrao: e.target.checked })}
-                  />
-                  {t("Supervisor padrão")}
-                </label>
-              )}
-            </Card>
-          ))}
-        </div>
-      </section>
+      <Supervisores
+        supervisores={data.supervisores}
+        parceirosPorSupervisor={porSupervisor}
+        podeEditar={podeEditar}
+        salvando={salvar.isPending}
+        salvar={(e, aoSalvar) => salvar.mutate(e, { onSuccess: aoSalvar })}
+        aoCriar={() => void qc.invalidateQueries({ queryKey: CHAVE })}
+      />
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
@@ -508,7 +459,7 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
             <option value="sem_contato">{t("Só sem contato")}</option>
             <option value="sem_supervisor">{t("Sem supervisor")}</option>
           </select>
-          {podeEditar && <NovoParceiro supervisores={supervisoresClima} aoCriar={() => void qc.invalidateQueries({ queryKey: CHAVE })} />}
+          {podeEditar && <NovoParceiro supervisores={supervisoresAtivos} aoCriar={() => void qc.invalidateQueries({ queryKey: CHAVE })} />}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -560,7 +511,7 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
                       onChange={(e) => salvar.mutate({ tipo: "parceiro", id: p.id, supervisor_id: e.target.value || null })}
                     >
                       <option value="">{t("Sem supervisor")}</option>
-                      {supervisoresClima.map((s) => (
+                      {supervisoresClima.filter((s) => s.ativo || s.id === p.supervisor_id).map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.nome}
                         </option>

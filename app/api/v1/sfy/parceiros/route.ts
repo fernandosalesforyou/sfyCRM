@@ -4,7 +4,8 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
  *
  *   GET  /api/v1/sfy/parceiros  → supervisores e parceiros da organização (gerente+)
  *   PUT  /api/v1/sfy/parceiros  → edita um parceiro (nome, situação, certificação, supervisor,
- *                                  contatos) ou um supervisor (contatos, ativo, padrão) (admin)
+ *                                  contatos) ou um supervisor (nome, contatos, estados, padrão,
+ *                                  desativar passando para um substituto) (admin)
  *   POST /api/v1/sfy/parceiros  → cria um parceiro (admin)
  *
  * Desde a 7B o CRM é a FONTE DE VERDADE dos parceiros: a Mariana cria, renomeia, certifica,
@@ -27,6 +28,7 @@ import { traduzir } from "@/lib/i18n/dicionario";
 import { validateRequest } from "@/lib/schemas";
 import { camposDaSituacao, codigoValido, dataValida, SITUACOES, type Situacao } from "@/lib/sfy/cadastro";
 import { sincronizarOpcoesDosParceiros } from "@/lib/sfy/opcoes-parceiro";
+import { donoDoNome, nomesAnterioresApos, UFS_DO_BRASIL, ufsEmUso, type SupervisorCadastrado } from "@/lib/sfy/supervisores";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -63,7 +65,18 @@ const edicaoSchema = z.discriminatedUnion("tipo", [
       certificado_em: dataOpcional,
     })
     .strict(),
-  z.object({ tipo: z.literal("supervisor"), ...base, padrao: z.boolean().optional() }).strict(),
+  z
+    .object({
+      tipo: z.literal("supervisor"),
+      ...base,
+      padrao: z.boolean().optional(),
+      nome: z.string().trim().min(1).max(120).optional(),
+      /** Só do Agro: os estados atendidos. */
+      ufs: z.array(z.enum(UFS_DO_BRASIL)).max(27).optional(),
+      /** Ao desativar: quem assume os parceiros, as cidades e os estados. */
+      substituto_id: z.string().uuid().nullable().optional(),
+    })
+    .strict(),
 ]);
 
 const criacaoSchema = z
@@ -136,7 +149,7 @@ export async function GET(): Promise<Response> {
   const [sup, par, mun] = await Promise.all([
     supabase
       .from("sfy_supervisores")
-      .select("id, nome, categoria, whatsapp, email, user_id, ufs, padrao, ativo")
+      .select("id, nome, categoria, whatsapp, email, user_id, ufs, padrao, ativo, nomes_anteriores")
       .eq("organization_id", org)
       .order("nome"),
     supabase
@@ -201,7 +214,11 @@ export async function PUT(req: NextRequest): Promise<Response> {
   const tabela = input.tipo === "parceiro" ? "sfy_parceiros" : "sfy_supervisores";
   const { data: anterior } = await admin
     .from(tabela)
-    .select(input.tipo === "parceiro" ? "codigo, whatsapp, email, ativo, certificado, recebe_leads, saiu_em" : "whatsapp, email, ativo, categoria")
+    .select(
+      input.tipo === "parceiro"
+        ? "codigo, whatsapp, email, ativo, certificado, recebe_leads, saiu_em"
+        : "id, nome, whatsapp, email, ativo, categoria, ufs, nomes_anteriores",
+    )
     .eq("organization_id", org)
     .eq("id", input.id)
     .maybeSingle();
@@ -244,22 +261,75 @@ export async function PUT(req: NextRequest): Promise<Response> {
       }
     }
   } else {
-    if (input.ativo !== undefined) patch.ativo = input.ativo;
+    const atual = anterior as unknown as SupervisorCadastrado;
+    const mudaCadastro = input.nome !== undefined || input.ufs !== undefined || input.ativo === true;
+    let lista: SupervisorCadastrado[] = [];
+    if (mudaCadastro) {
+      const { data: todos, error: erroLista } = await admin
+        .from("sfy_supervisores")
+        .select("id, nome, categoria, ufs, ativo, nomes_anteriores")
+        .eq("organization_id", org);
+      if (erroLista) return fail("internal_error", erroLista.message, 500, { requestId });
+      lista = (todos ?? []) as SupervisorCadastrado[];
+    }
+    if (input.nome !== undefined && input.nome !== atual.nome) {
+      const repetido = donoDoNome(lista, input.nome, input.id);
+      if (repetido) {
+        return fail("conflict", `${t("Já existe um supervisor com este nome:")} ${repetido.nome}`, 409, { requestId });
+      }
+      patch.nome = input.nome;
+      patch.nomes_anteriores = nomesAnterioresApos(atual, input.nome);
+    }
+    if (input.ufs !== undefined && atual.categoria !== "agro") {
+      return fail("validation_failed", t("Estados só valem para os supervisores do Agro."), 422, { requestId });
+    }
+    // Estado com um só responsável: vale ao trocar a lista e ao reativar com a lista antiga.
+    if (atual.categoria === "agro" && (input.ufs !== undefined || input.ativo === true)) {
+      const ocupadas = ufsEmUso(lista, input.ufs ?? atual.ufs ?? [], input.id);
+      if (ocupadas.length > 0) {
+        return fail(
+          "conflict",
+          `${t("Estado já atendido por outro supervisor:")} ${ocupadas.map((o) => `${o.uf} (${o.nome})`).join(", ")}`,
+          409,
+          { requestId },
+        );
+      }
+      if (input.ufs !== undefined) patch.ufs = [...new Set(input.ufs)].sort();
+    }
+    if (input.ativo === true) patch.ativo = true;
     if (input.padrao !== undefined) {
-      if (antes.categoria !== "climabrisa") {
-        return fail("validation_failed", t("O padrão só vale para os supervisores da Climabrisa."), 422, { requestId });
+      if (input.padrao && atual.ativo === false && input.ativo !== true) {
+        return fail("validation_failed", t("Um supervisor desativado não pode ser o padrão."), 422, { requestId });
       }
       patch.padrao = input.padrao;
     }
+    // Desativar é uma operação só no banco (ninguém fica sem supervisor no meio do caminho).
+    if (input.ativo === false) {
+      const { data: r, error: erroDesativar } = await admin.rpc("fn_sfy_desativar_supervisor", {
+        p_org: org,
+        p_supervisor: input.id,
+        p_substituto: input.substituto_id ?? null,
+      });
+      if (erroDesativar) return fail("internal_error", erroDesativar.message, 500, { requestId });
+      const recusa = (r as { erro?: string } | null)?.erro;
+      if (recusa === "tem_parceiros") {
+        return fail("conflict", t("Escolha quem assume os parceiros antes de desativar."), 409, { requestId });
+      }
+      if (recusa === "tem_estados") {
+        return fail("conflict", t("Escolha quem assume os estados antes de desativar."), 409, { requestId });
+      }
+      if (recusa) return fail("validation_failed", t("Substituto inválido. Escolha um supervisor ativo da mesma linha."), 422, { requestId });
+      delete patch.padrao;
+    }
   }
 
-  // Um único padrão da Climabrisa: ligar um desliga os outros (antes de gravar este).
-  if (input.tipo === "supervisor" && input.padrao === true) {
+  // Um único padrão por linha: ligar um desliga os outros da mesma categoria (antes de gravar este).
+  if (input.tipo === "supervisor" && patch.padrao === true) {
     await admin
       .from("sfy_supervisores")
       .update({ padrao: false, updated_at: new Date().toISOString() })
       .eq("organization_id", org)
-      .eq("categoria", "climabrisa")
+      .eq("categoria", antes.categoria as string)
       .neq("id", input.id);
   }
 
@@ -267,7 +337,9 @@ export async function PUT(req: NextRequest): Promise<Response> {
   if (error) return fail("internal_error", error.message, 500, { requestId });
 
   // Mexeu em quem pode receber lead (ou em quem supervisiona)? O supervisor das cidades se refaz.
-  const mexeNoDestino = ["ativo", "recebe_leads", "certificado", "supervisor_id", "whatsapp", "email"].some((k) => k in patch);
+  const mexeNoDestino =
+    (input.tipo === "supervisor" && input.ativo === false) ||
+    ["ativo", "recebe_leads", "certificado", "supervisor_id", "whatsapp", "email"].some((k) => k in patch);
   const recalculo = mexeNoDestino ? await recalcular(admin, org) : null;
   // Renomear ou dar saída muda o rótulo da opção que os negócios usam (o valor, o código, não muda).
   const opcoes =
@@ -286,7 +358,8 @@ export async function PUT(req: NextRequest): Promise<Response> {
     metadata: {
       tipo: input.tipo,
       campos: Object.keys(patch).filter((k) => k !== "updated_at"),
-      ativo: { antes: (antes.ativo as boolean | undefined) ?? null, depois: (patch.ativo as boolean | undefined) ?? null },
+      ativo: { antes: (antes.ativo as boolean | undefined) ?? null, depois: (patch.ativo as boolean | undefined) ?? input.ativo ?? null },
+      ...(input.tipo === "supervisor" && input.ativo === false ? { substituto_id: input.substituto_id ?? null } : {}),
       ...(input.tipo === "parceiro" && input.situacao ? { situacao: input.situacao } : {}),
     },
   });

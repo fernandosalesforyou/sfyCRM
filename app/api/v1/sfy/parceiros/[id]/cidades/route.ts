@@ -5,8 +5,9 @@ import { requireSupportWrite } from "@/lib/impersonate/support";
  *   GET /api/v1/sfy/parceiros/<id>/cidades  → cidades do parceiro (gerente+)
  *   PUT /api/v1/sfy/parceiros/<id>/cidades  → adiciona e/ou remove cidades (admin)
  *
- * As cidades vêm SEMPRE da lista fechada do IBGE (`sfy_municipios`, pelo código): nada de texto
- * livre, então não há cidade escrita errada. Cada troca refaz o supervisor das cidades sem
+ * Municípios vêm da lista do IBGE (`sfy_municipios`, pelo código). Distrito ou povoado, que não está
+ * na lista, entra pelo nome escrito (`adicionar_livres`); se o nome for de um município daquele
+ * estado, vira o município. Cada troca refaz o supervisor das cidades sem
  * parceiro elegível e devolve o impacto (quantas cidades passam a ter rodízio e quantas ficaram
  * sem parceiro), para a tela avisar a Mariana.
  */
@@ -21,6 +22,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { traduzir } from "@/lib/i18n/dicionario";
 import { validateRequest } from "@/lib/schemas";
 import { impactoDasCidades } from "@/lib/sfy/cadastro";
+import { UFS_DO_BRASIL } from "@/lib/sfy/supervisores";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,12 +31,18 @@ export const dynamic = "force-dynamic";
 type Ctx = { params: Promise<{ id: string }> };
 
 const MAXIMO_POR_PEDIDO = 500;
+const MAXIMO_DE_LIVRES = 50;
 
 const troca = z
   .object({
     adicionar: z.array(z.number().int().positive()).max(MAXIMO_POR_PEDIDO).optional(),
     remover: z.array(z.number().int().positive()).max(MAXIMO_POR_PEDIDO).optional(),
-    // Cidade cadastrada com grafia fora do IBGE (carga antiga): sai pelo nome normalizado.
+    // Distrito ou povoado: não está no IBGE, entra como foi escrito.
+    adicionar_livres: z
+      .array(z.object({ uf: z.enum(UFS_DO_BRASIL), nome: z.string().trim().min(2).max(120) }).strict())
+      .max(MAXIMO_DE_LIVRES)
+      .optional(),
+    // Localidade fora do IBGE (escrita à mão ou de carga antiga): sai pelo nome normalizado.
     remover_nomes: z
       .array(z.object({ uf: z.string().regex(/^[A-Z]{2}$/), cidade_norm: z.string().min(1).max(120) }))
       .max(MAXIMO_POR_PEDIDO)
@@ -51,11 +59,11 @@ export async function GET(_req: NextRequest, ctx: Ctx): Promise<Response> {
 
   const supabase = await createClient();
   const org = authz.org.orgId;
-  const linhas: { cidade_norm: string; uf: string }[] = [];
+  const linhas: { cidade_norm: string; uf: string; cidade_nome: string | null }[] = [];
   for (let de = 0; de < 5000; de += 1000) {
     const { data, error } = await supabase
       .from("sfy_parceiro_cidades")
-      .select("cidade_norm, uf")
+      .select("cidade_norm, uf, cidade_nome")
       .eq("organization_id", org)
       .eq("parceiro_id", id)
       .order("uf")
@@ -83,7 +91,12 @@ export async function GET(_req: NextRequest, ctx: Ctx): Promise<Response> {
   }
   const cidades = linhas.map((l) => {
     const m = nomes.get(`${l.uf}|${l.cidade_norm}`);
-    return { uf: l.uf, cidade_norm: l.cidade_norm, nome: m?.nome ?? l.cidade_norm, codigo_ibge: m?.codigo_ibge ?? null };
+    return {
+      uf: l.uf,
+      cidade_norm: l.cidade_norm,
+      nome: m?.nome ?? l.cidade_nome ?? l.cidade_norm,
+      codigo_ibge: m?.codigo_ibge ?? null,
+    };
   });
   return ok({ cidades }, { requestId });
 }
@@ -112,7 +125,8 @@ export async function PUT(req: NextRequest, ctx: Ctx): Promise<Response> {
   const adicionar = [...new Set(input.adicionar ?? [])];
   const remover = [...new Set(input.remover ?? [])];
   const removerNomes = input.remover_nomes ?? [];
-  if (adicionar.length === 0 && remover.length === 0 && removerNomes.length === 0) {
+  const livres = input.adicionar_livres ?? [];
+  if (adicionar.length === 0 && remover.length === 0 && removerNomes.length === 0 && livres.length === 0) {
     return fail("validation_failed", t("Nada para alterar."), 422, { requestId });
   }
 
@@ -138,7 +152,23 @@ export async function PUT(req: NextRequest, ctx: Ctx): Promise<Response> {
   }
 
   const chave = (m: { uf: string; nome_norm: string }) => `${m.uf}|${m.nome_norm}`;
-  const adicionadas = adicionar.map((c) => porCodigo.get(c)!);
+  // O nome escrito à mão é normalizado pelo BANCO: a mesma regra que a distribuição usa para procurar.
+  const escritas: { uf: string; nome_norm: string; cidade_nome: string | null }[] = [];
+  for (const l of livres) {
+    const nome = l.nome.replace(/\s+/g, " ").trim();
+    const { data: norm, error: erroNorm } = await admin.rpc("fn_sfy_normaliza_cidade", { p_texto: nome });
+    if (erroNorm || !norm) return fail("internal_error", erroNorm?.message ?? "normalizacao", 500, { requestId });
+    const { count } = await admin
+      .from("sfy_municipios")
+      .select("codigo_ibge", { count: "exact", head: true })
+      .eq("uf", l.uf)
+      .eq("nome_norm", norm as string);
+    escritas.push({ uf: l.uf, nome_norm: norm as string, cidade_nome: count ? null : nome });
+  }
+  const adicionadas = [
+    ...adicionar.map((c) => ({ ...porCodigo.get(c)!, cidade_nome: null as string | null })),
+    ...escritas,
+  ];
   const removidas = [
     ...remover.map((c) => porCodigo.get(c)!),
     ...removerNomes.map((n) => ({ uf: n.uf, nome_norm: n.cidade_norm })),
@@ -146,7 +176,13 @@ export async function PUT(req: NextRequest, ctx: Ctx): Promise<Response> {
 
   if (adicionadas.length > 0) {
     const { error } = await admin.from("sfy_parceiro_cidades").upsert(
-      adicionadas.map((m) => ({ organization_id: org, parceiro_id: id, cidade_norm: m.nome_norm, uf: m.uf })),
+      adicionadas.map((m) => ({
+        organization_id: org,
+        parceiro_id: id,
+        cidade_norm: m.nome_norm,
+        uf: m.uf,
+        cidade_nome: m.cidade_nome,
+      })),
       { onConflict: "parceiro_id,cidade_norm,uf", ignoreDuplicates: true },
     );
     if (error) return fail("internal_error", error.message, 500, { requestId });
