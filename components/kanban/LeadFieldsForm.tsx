@@ -1,5 +1,6 @@
 "use client";
 
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useActiveOrg } from "@/hooks/auth/AuthProvider";
 import { useT } from "@/hooks/i18n/useT";
 import { useEffect, useImperativeHandle, useState, type Ref } from "react";
@@ -75,6 +76,7 @@ function mesesComoTexto(meses: number | null | undefined): string {
  */
 export function LeadFieldsForm({ lead, pipelineId, fieldDefs = [], onSaved, onCancel, controle }: Props) {
   const t = useT();
+  const soConsulta = useSoConsulta();
   const org = useActiveOrg();
   // A moeda do negócio JÁ GRAVADO vence: trocar a moeda da empresa não
   // reescreve o que nasceu antes, e o cartão e o dossiê mostram a persistida.
@@ -199,7 +201,8 @@ export function LeadFieldsForm({ lead, pipelineId, fieldDefs = [], onSaved, onCa
 
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <fieldset disabled={soConsulta} className="min-w-0 space-y-4">
         <div className="space-y-2">
           <Label htmlFor="title">{t("Título")}</Label>
           <Input
@@ -311,16 +314,19 @@ export function LeadFieldsForm({ lead, pipelineId, fieldDefs = [], onSaved, onCa
           </div>
         )}
 
-      <div className="flex justify-end gap-2">
-        {onCancel && (
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={edit.isPending}>
-            {t("Cancelar")}
+      {!soConsulta && (
+        <div className="flex justify-end gap-2">
+          {onCancel && (
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={edit.isPending}>
+              {t("Cancelar")}
+            </Button>
+          )}
+          <Button type="submit" disabled={edit.isPending}>
+            {edit.isPending ? t("Salvando…") : t("Salvar")}
           </Button>
-        )}
-        <Button type="submit" disabled={edit.isPending}>
-          {edit.isPending ? t("Salvando…") : t("Salvar")}
-        </Button>
-      </div>
+        </div>
+      )}
+      </fieldset>
     </form>
   );
 }

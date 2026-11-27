@@ -11,6 +11,7 @@ import {
 import { DEFAULT_VISIBILITY_MODE, roleAtLeast, type VisibilityMode } from "@/lib/auth/types";
 import { clientePelaAgendaLigado, clientePelaVendaLigado } from "@/lib/schemas/settings";
 import { AuthProvider } from "@/hooks/auth/AuthProvider";
+import { ProvedorSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { ProvedorDeCoresDasEtiquetas } from "@/components/tags/CoresDasEtiquetas";
 import { AppShell } from "./_components/AppShell";
 import { EstiloDaMarcaDaOrganizacao } from "./_components/EstiloDaMarcaDaOrganizacao";
@@ -298,16 +299,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const shell = (
     <ProvedorDaOcupacaoDoRodape>
       <VoiceCallProvider>
-        <AppShell
-          sidebarCollapsed={collapsed}
-          podeAtender={Boolean(activeOrg && roleAtLeast(activeOrg.role, "agent"))}
-          // sfy — o dono do servidor segue vendo tudo; os demais, só o que está pronto.
-          telasLiberadas={
-            user.is_platform_admin ? null : telasLiberadas(process.env.SFY_TELAS_LIBERADAS)
-          }
-        >
-          {children}
-        </AppShell>
+        {/* sfy — "Somente leitura" não vê botão que o servidor recusaria. */}
+        <ProvedorSoConsulta soConsulta={activeOrg?.role === "viewer" && !(user.is_platform_admin && !user.support)}>
+          <AppShell
+            sidebarCollapsed={collapsed}
+            podeAtender={Boolean(activeOrg && roleAtLeast(activeOrg.role, "agent"))}
+            // sfy — o dono do servidor segue vendo tudo; os demais, só o que está pronto.
+            telasLiberadas={
+              user.is_platform_admin ? null : telasLiberadas(process.env.SFY_TELAS_LIBERADAS)
+            }
+          >
+            {children}
+          </AppShell>
+        </ProvedorSoConsulta>
       </VoiceCallProvider>
     </ProvedorDaOcupacaoDoRodape>
   );

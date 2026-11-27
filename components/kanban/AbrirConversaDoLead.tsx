@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useT } from "@/hooks/i18n/useT";
 import { ArrowRight, ChatCircle } from "@/lib/ui/icons";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,7 @@ export function AbrirConversaDoLead({ contactId, phone, variante = "card" }: Pro
   const t = useT();
   const router = useRouter();
   const qc = useQueryClient();
+  const soConsulta = useSoConsulta();
   const [abrindo, setAbrindo] = useState(false);
 
   const telefone = phone?.trim() ?? "";
@@ -78,7 +80,7 @@ export function AbrirConversaDoLead({ contactId, phone, variante = "card" }: Pro
     "Sem telefone no contato: cadastre um telefone para abrir a conversa.",
   );
 
-  if (!temAlvo) return null;
+  if (!temAlvo || soConsulta) return null;
 
   async function abrir() {
     if (!podeAbrir || abrindo) return;

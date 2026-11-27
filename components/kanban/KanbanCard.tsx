@@ -1,6 +1,7 @@
 "use client";
 import { Draggable } from "@hello-pangea/dnd";
 import type { MouseEvent } from "react";
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useT } from "@/hooks/i18n/useT";
 import { cn } from "@/lib/utils";
 import { formatValorDoNegocio, MOEDA_PADRAO } from "@/lib/money";
@@ -106,6 +107,8 @@ export function KanbanCard({
   somenteLeitura = false,
 }: KanbanCardProps) {
   const t = useT();
+  const soConsulta = useSoConsulta();
+  const semEscrita = somenteLeitura || soConsulta;
   const value = formatValor(card.valueCents, card.currency);
   /**
    * A MENSALIDADE, ao lado do valor único (fatia 1 da #3602): o card escreve
@@ -163,7 +166,7 @@ export function KanbanCard({
   const handleClick = (e: MouseEvent<HTMLDivElement>) => decidirClique(e);
 
   return (
-    <Draggable draggableId={card.id} index={index} isDragDisabled={somenteLeitura}>
+    <Draggable draggableId={card.id} index={index} isDragDisabled={semEscrita}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
@@ -227,7 +230,7 @@ export function KanbanCard({
                   teclado. */}
               {/* No funil arquivado a caixa some de vez: seleção só existe
                   para a ação em lote, e escrever ali é o que o arquivo proíbe (#1298). */}
-              {!somenteLeitura && (
+              {!semEscrita && (
                 <input
                   type="checkbox"
                   checked={Boolean(isSelected)}
@@ -292,7 +295,7 @@ export function KanbanCard({
                 </button>
               </h3>
             </div>
-            {!somenteLeitura && (
+            {!semEscrita && (
               <KanbanCardActions
                 lead={lead}
                 pipelineId={pipelineId}
@@ -334,7 +337,7 @@ export function KanbanCard({
               denso ? "mt-1 h-5" : "mt-1.5 h-6",
             )}
           >
-            {state.slot.type === "awaiting" && (
+            {state.slot.type === "awaiting" && !soConsulta && (
               // A proposta do agente é a ÚNICA linha do card com ação: é o
               // ponto onde a decisão do humano entra. Sem os botões aqui, o
               // texto seria só mais um aviso — e a wave existe porque avisar
@@ -346,7 +349,7 @@ export function KanbanCard({
                 pipelineId={pipelineId}
               />
             )}
-            {state.slot.type === "reactivation" && (
+            {state.slot.type === "reactivation" && !soConsulta && (
               // O negócio parou E aqui está o que fazer. Mesma faixa, mesma
               // altura: o card não cresce quando o sistema tem algo a propor.
               <ReactivationSlot

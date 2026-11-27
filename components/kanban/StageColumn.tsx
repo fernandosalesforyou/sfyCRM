@@ -1,6 +1,7 @@
 "use client";
 import { Droppable } from "@hello-pangea/dnd";
 import { useRef, useState, type CSSProperties } from "react";
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useT } from "@/hooks/i18n/useT";
 import { cn } from "@/lib/utils";
 import type { Lead } from "@/lib/types/leads";
@@ -70,6 +71,7 @@ export function StageColumn({
   somenteLeitura = false,
 }: StageColumnProps) {
   const t = useT();
+  const soConsulta = useSoConsulta();
   // O TOTAL É POR MOEDA (#1531). Antes ele somava todos os `value_cents` e
   // escrevia o resultado na moeda do primeiro negócio: R$ 5.000 e 5.000 € saíam
   // "R$ 10.000,00", um valor que não existe. Agora cada moeda tem o seu total,
@@ -192,7 +194,7 @@ export function StageColumn({
             Indeterminado quando a seleção é parcial: "alguns" e "nenhum" não
             podem ter a mesma aparência num controle que o próximo clique
             inverte. */}
-            {!somenteLeitura && (
+            {!somenteLeitura && !soConsulta && (
               <input
                 type="checkbox"
                 checked={todosSelecionados}
@@ -283,7 +285,7 @@ export function StageColumn({
                 isSelected={selectedLeadIds?.has(lead.id)}
                 isSelecting={(selectedLeadIds?.size ?? 0) > 0}
                 pulseCount={pulses?.get(lead.id) ?? 0}
-                onSelect={somenteLeitura ? undefined : aoSelecionar}
+                onSelect={somenteLeitura || soConsulta ? undefined : aoSelecionar}
                 onOpen={somenteLeitura ? undefined : onOpen}
                 etapas={etapas}
                 onMoverPara={onMoverPara}

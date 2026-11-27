@@ -1,5 +1,6 @@
 "use client";
 
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useLocaleDeData } from "@/hooks/i18n/useLocaleDeData";
 
 import { useT } from "@/hooks/i18n/useT";
@@ -103,6 +104,7 @@ export function ContactDetailClient({ contactId, paineisDeModulo = [], acessosMc
   const [anonOpen, setAnonOpen] = useState(false);
   // Juntar com outra ficha (spec 31, PR A): gestor, mesmo gate da fusão. Fica
   // antes dos early returns pelo mesmo motivo dos hooks acima.
+  const soConsulta = useSoConsulta();
   const podeJuntar = roleAtLeast(activeOrg?.role, "manager");
   const [juntarOpen, setJuntarOpen] = useState(false);
   // Desfazer o descadastro é o override da regra W-02 — só admin, e auditado.
@@ -380,10 +382,12 @@ export function ContactDetailClient({ contactId, paineisDeModulo = [], acessosMc
                 <span>{t("Juntar com outra ficha")}</span>
               </Button>
             )}
-            <Button variant="outline" onClick={() => setEditOpen(true)} className="shrink-0">
-              <PencilSimple size={16} weight="bold" aria-hidden />
-              <span>{t("Editar")}</span>
-            </Button>
+            {!soConsulta && (
+              <Button variant="outline" onClick={() => setEditOpen(true)} className="shrink-0">
+                <PencilSimple size={16} weight="bold" aria-hidden />
+                <span>{t("Editar")}</span>
+              </Button>
+            )}
           </div>
         )}
       </header>
