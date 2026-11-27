@@ -232,6 +232,16 @@ describe("GET /api/v1/system/version", () => {
     expect(body.data.notes.complete).toBe(true);
   });
 
+  it("sfy: com SFY_SEM_NOTAS_DE_VERSAO não entrega notas nem a versão publicada na origem", async () => {
+    vi.stubEnv("SFY_SEM_NOTAS_DE_VERSAO", "true");
+    vi.mocked(loadAuthUser).mockResolvedValue(OWNER as never);
+    const { GET } = await import("../version/route");
+    const body = await (await GET(get())).json();
+    vi.unstubAllEnvs();
+    expect(body.data.notes).toBeNull();
+    expect(body.data.official_latest_version).toBe("");
+  });
+
   it("entrega TODAS as seções entre a instalada e a alvo, com o aviso do meio nomeado", async () => {
     // O defeito que esta faixa conserta: quem pula versões via só a seção-alvo,
     // e o aviso de ação manual da versão do meio desaparecia (commit ac9472c5).

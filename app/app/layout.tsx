@@ -40,6 +40,7 @@ import { listarConexoesCaidas, type ConexaoCaida } from "@/lib/channels/health";
 import { VoiceCallProvider } from "@/components/voice/VoiceCallContext";
 import { ProvedorDaOcupacaoDoRodape } from "@/lib/ui/rodape-ocupado";
 import { acessoFoiRevogado } from "@/lib/auth/vinculo-revogado";
+import { telasLiberadas } from "@/lib/sfy/preparacao";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await loadAuthUser();
@@ -300,6 +301,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <AppShell
           sidebarCollapsed={collapsed}
           podeAtender={Boolean(activeOrg && roleAtLeast(activeOrg.role, "agent"))}
+          // sfy — o dono do servidor segue vendo tudo; os demais, só o que está pronto.
+          telasLiberadas={
+            user.is_platform_admin ? null : telasLiberadas(process.env.SFY_TELAS_LIBERADAS)
+          }
         >
           {children}
         </AppShell>
