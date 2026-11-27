@@ -18,7 +18,8 @@ import type { CapacidadeDaOrganizacao } from "@/lib/organizacao/capacidades";
  * Doutrina: docs/doctrine/sistema-vivo.md — "por qual porta se chega até mim?"
  */
 
-export type NavGroupId = "atendimento" | "crm" | "ia" | "canais" | "analise" | "organizacao";
+export type NavGroupId =
+  "comercial" | "atendimento" | "crm" | "ia" | "canais" | "analise" | "organizacao";
 
 export interface NavGroup {
   id: NavGroupId;
@@ -90,6 +91,9 @@ export interface NavMetadata {
  * mesma conversa para a sexta tela.
  */
 export const NAV_GROUPS: NavGroup[] = [
+  // sfy (Climabrisa): atalhos do dia a dia. Grupo SEM hub: os itens só sobem ao menu quando a
+  // empresa os escolhe em "Menu lateral" (lista explícita), então o menu padrão não muda.
+  { id: "comercial", label: "Comercial" },
   { id: "atendimento", label: "Atendimento" },
   { id: "crm", label: "CRM", hub: { href: "/app/crm", label: "Ver tudo em CRM" } },
   { id: "ia", label: "Agente de IA", hub: { href: "/app/ai", label: "Ver tudo em IA" } },
@@ -384,7 +388,8 @@ export const NAV_CATALOG = [
     // Fila de ligações sobre um funil próprio. A régua está em lib/cold-call/regras.ts.
     href: "/app/cold-call",
     label: "Cold Call",
-    description: "Ligue para uma lista de leads, um por vez, com roteiro e resultado de cada ligação.",
+    description:
+      "Ligue para uma lista de leads, um por vez, com roteiro e resultado de cada ligação.",
     icon: "Phone",
     // No CRM, e não em Atendimento: porta de módulo mora em grupo com hub ("Ver tudo em CRM"),
     // que é o que dá a ela um caminho sem depender de quem personalizou o menu.
@@ -473,7 +478,8 @@ export const NAV_CATALOG = [
     // busca não dizem qual é qual.
     href: "/app/agenda/avisos",
     label: "Aviso de agendamento",
-    description: "Receber no WhatsApp cada horário marcado, remarcado ou cancelado, e o resumo das 7h.",
+    description:
+      "Receber no WhatsApp cada horário marcado, remarcado ou cancelado, e o resumo das 7h.",
     icon: "PaperPlaneTilt",
     group: "organizacao",
     section: "Sua empresa",
@@ -498,7 +504,8 @@ export const NAV_CATALOG = [
   {
     href: "/app/settings/tenant/proposals/modelos",
     label: "Modelos de proposta",
-    description: "Personalize os modelos da plataforma ou crie os da sua empresa, inclusive a partir de uma proposta que você já usa.",
+    description:
+      "Personalize os modelos da plataforma ou crie os da sua empresa, inclusive a partir de uma proposta que você já usa.",
     icon: "FileText",
     group: "organizacao",
     section: "Sua empresa",
@@ -615,7 +622,8 @@ export const NAV_CATALOG = [
     // e na busca, e quem usa pode pô-la no menu dela.
     href: "/app/ai/atendimento",
     label: "Fluxos de atendimento",
-    description: "Perguntas que a IA conduz durante a conversa, com as respostas guardadas na ficha do cliente.",
+    description:
+      "Perguntas que a IA conduz durante a conversa, com as respostas guardadas na ficha do cliente.",
     icon: "ListChecks",
     group: "ia",
     section: "Montar o agente",
@@ -657,7 +665,8 @@ export const NAV_CATALOG = [
     label: "Provedores",
     // O "Jev" vem cedo: o ⌘K mostra só o começo da descrição, e a versão
     // longa cortava antes do nome — quem procurava "jev" achava, mas não via por quê.
-    description: "Ligue o Jev para decisões rápidas e escolha qual inteligência atende cada parte do sistema.",
+    description:
+      "Ligue o Jev para decisões rápidas e escolha qual inteligência atende cada parte do sistema.",
     icon: "Plugs",
     group: "ia",
     section: "Montar o agente",
@@ -924,13 +933,23 @@ export const NAV_CATALOG = [
   {
     // sfy (Bloco C): para quem o CRM encaminha cada cliente. Configuração de empresa, sem
     // `sidebar`: o cadastro se mexe de vez em quando. Gerente vê; só admin edita (a rota confere).
+    // sfy (Climabrisa): no grupo "Comercial" como "Representantes"; todos veem, só admin edita.
     href: "/app/settings/parceiros",
-    label: "Parceiros e supervisores",
-    description: "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.",
+    label: "Representantes",
+    description:
+      "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.",
     icon: "Users",
-    group: "organizacao",
-    section: "Sua empresa",
-    minRole: "manager",
+    group: "comercial",
+    section: "Comercial",
+  },
+  {
+    // sfy (Climabrisa): atalho para o funil principal (o marcado como padrão).
+    href: "/app/funil-principal",
+    label: "Funil de vendas",
+    description: "Abre direto o quadro do funil principal da empresa.",
+    icon: "Kanban",
+    group: "comercial",
+    section: "Comercial",
   },
   {
     // sfy (Bloco D): fechamentos que os parceiros informam pelo link. Configuração de empresa, sem
@@ -1005,7 +1024,8 @@ export const NAV_CATALOG = [
     // ("Ver tudo em Análise"), como a do Cold Call.
     href: "/app/painel",
     label: "Painel de atendimento",
-    description: "Quem espera resposta, quem está em atendimento e quem foi atendido hoje, por número.",
+    description:
+      "Quem espera resposta, quem está em atendimento e quem foi atendido hoje, por número.",
     icon: "ListChecks",
     group: "analise",
     section: "Os números do período",
@@ -1093,7 +1113,8 @@ export const NAV_CATALOG = [
     // configuração tem superfície" (docs/doctrine/restricao-de-canal.md).
     href: "/app/settings/automacoes",
     label: "Automações",
-    description: "O freio único do passo em que a IA escolhe entre as opções de uma regra, para a empresa inteira.",
+    description:
+      "O freio único do passo em que a IA escolhe entre as opções de uma regra, para a empresa inteira.",
     icon: "FlowArrow",
     group: "organizacao",
     section: "Sua empresa",

@@ -23,7 +23,7 @@ const consulta = z.object({
 
 export async function GET(req: NextRequest): Promise<Response> {
   const requestId = randomUUID();
-  const authz = await requireRole("manager", { requestId, resource: "team" });
+  const authz = await requireRole("viewer", { requestId, resource: "team" });
   if (!authz.ok) return authz.response;
 
   const parsed = consulta.safeParse(Object.fromEntries(req.nextUrl.searchParams.entries()));

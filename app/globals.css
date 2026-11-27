@@ -1579,3 +1579,9 @@
 @media (prefers-reduced-motion: reduce) {
   .cc-ondas-ativa .cc-onda { animation: none; }
 }
+
+/* sfy (Climabrisa): fonte do sistema inteiro = Helvetica (no Windows, que não tem Helvetica, cai na Arial).
+   Troca o valor da variável que o produto usa em todo lugar, sem mexer em cada componente. */
+html {
+  --font-atkinson: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}

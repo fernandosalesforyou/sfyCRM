@@ -30,6 +30,8 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) redirect("/app");
+  // sfy: com o login enxuto ligado, a raiz vai direto para a tela de entrar (sem a página de apresentação).
+  if (process.env.SFY_LOGIN_SIMPLES === "true") redirect("/login");
 
   const marca = await marcaDaSaida(null);
   const idioma = await idiomaDoVisitante(null);

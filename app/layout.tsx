@@ -99,7 +99,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const { name } = marca;
   return {
     title: {
-      default: `${name} — atendimento e vendas por WhatsApp com agentes de IA`,
+      // sfy: com o login enxuto, a aba mostra só o nome (sem o slogan do produto).
+      default:
+        process.env.SFY_LOGIN_SIMPLES === "true"
+          ? name
+          : `${name} — atendimento e vendas por WhatsApp com agentes de IA`,
       template: `%s · ${name}`,
     },
     description:

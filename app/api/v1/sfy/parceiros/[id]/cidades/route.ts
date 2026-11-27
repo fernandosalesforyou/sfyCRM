@@ -52,7 +52,7 @@ const troca = z
 
 export async function GET(_req: NextRequest, ctx: Ctx): Promise<Response> {
   const requestId = randomUUID();
-  const authz = await requireRole("manager", { requestId, resource: "team" });
+  const authz = await requireRole("viewer", { requestId, resource: "team" });
   if (!authz.ok) return authz.response;
   const { id } = await ctx.params;
   if (!z.string().uuid().safeParse(id).success) return fail("validation_failed", "id", 422, { requestId });
