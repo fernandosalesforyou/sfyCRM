@@ -242,6 +242,11 @@ const DECISOES: Record<string, Decisao> = {
     caminho: "gatilho",
     razao: "fn_reply_redact (0227): rascunho/original/propostas zerados na virada — texto gerado sobre a conversa da pessoa, alcançável pelos DOIS caminhos.",
   },
+  sfy_pedidos_pos_venda: {
+    decidida: "redigir",
+    caminho: "gatilho",
+    razao: "sfy 5011: fn_sfy_pos_venda_anonimizado cancela a sequência e apaga o link de rastreio (leva ao endereço da entrega); o número da NF-e fica como referência fiscal.",
+  },
   calendar_appointments: {
     decidida: "redigir",
     caminho: "gatilho",

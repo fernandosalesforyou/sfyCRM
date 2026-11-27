@@ -777,6 +777,8 @@ export interface ExportPayload {
   lead_field_proposals: LeadFieldProposalRow[];
   orders: OrderRow[];
   activities: ActivityRow[];
+  /** sfy (5011): sequência de pós-venda dos pedidos dele. Ausente quando não há linha. */
+  pos_venda?: { nfe_numero: string; venda_numero: string; link_rastreio: string | null; situacao: string; situacao_rastreio: string; entregue_em: string | null; instalacao_confirmada_em: string | null; msg1_em: string | null; msg2_em: string | null; msg3_em: string | null; criado_em: string }[];
   checkpoints: CheckpointRow[];
   /** Opcionais: payload gerado antes da 9095 não os tem. */
   mcp_pedidos_de_acesso?: AcessoMcpRow[];
@@ -1683,6 +1685,27 @@ export async function collectExportData(args: CollectArgs): Promise<ExportPayloa
     } else if (data) {
       conferirTeto("activities", data, 500);
       activities = data;
+    }
+  }
+
+  // sfy (5011) — pós-venda: contact_id direto em sfy_pedidos_pos_venda.
+  let pos_venda: NonNullable<ExportPayload["pos_venda"]> = [];
+  if (contactId) {
+    const { data, error } = await admin
+      .from("sfy_pedidos_pos_venda")
+      .select("nfe_numero, venda_numero, link_rastreio, situacao, situacao_rastreio, entregue_em, instalacao_confirmada_em, msg1_em, msg2_em, msg3_em, criado_em")
+      .eq("organization_id", organizationId)
+      .eq("contact_id", contactId)
+      .order("criado_em", { ascending: false })
+      .limit(500);
+    if (error) {
+      logger.warn("[lgpd-export-worker] pos_venda load failed", {
+        request_id: requestId,
+        error: error.message,
+      });
+    } else if (data) {
+      conferirTeto("pos_venda", data, 500);
+      pos_venda = data;
     }
   }
 
@@ -2635,6 +2658,7 @@ export async function collectExportData(args: CollectArgs): Promise<ExportPayloa
     ...(cadenciasInstaladas ? { cadencias_inscricoes, cadencias_eventos } : {}),
     orders,
     activities,
+    ...(pos_venda.length > 0 ? { pos_venda } : {}),
     checkpoints,
     mcp_pedidos_de_acesso: mcpPedidos,
     mcp_acessos: mcpAcessos,

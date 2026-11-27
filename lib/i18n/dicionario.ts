@@ -20579,6 +20579,24 @@ export const DICIONARIO: Traducoes = {
   "Esta área ainda está em preparação": { es: "Esta área todavía está en preparación" },
   "Estamos configurando esta parte do sistema para a sua empresa. Ela será liberada assim que estiver pronta.": { es: "Estamos configurando esta parte del sistema para su empresa. Se habilitará en cuanto esté lista." },
   "O que você já pode ver:": { es: "Lo que ya puede ver:" },
+
+  // sfy (etapa 10): bloco Pós-venda do negócio.
+  "Não foi possível concluir.": { es: "No fue posible completar." },
+  "Aguardando o link de rastreio": { es: "Esperando el enlace de seguimiento" },
+  "Pós-venda do pedido": { es: "Posventa del pedido" },
+  "NF-e": { es: "Factura electrónica" },
+  "entregue em": { es: "entregado el" },
+  "Rastreio enviado": { es: "Seguimiento enviado" },
+  "Pergunta da instalação": { es: "Pregunta de instalación" },
+  "instalado em": { es: "instalado el" },
+  "Lembrete de manutenção": { es: "Recordatorio de mantenimiento" },
+  "Avisar sem rastreio": { es: "Avisar sin seguimiento" },
+  "Colar o link de rastreio": { es: "Pegar el enlace de seguimiento" },
+  "Marcar como instalado": { es: "Marcar como instalado" },
+  "Este negócio ainda não entrou no pós-venda.": { es: "Este negocio aún no entró en la posventa." },
+  "Só dá para retomar uma sequência pausada.": { es: "Solo se puede reanudar una secuencia en pausa." },
+  "O link precisa ser https e do domínio da empresa.": { es: "El enlace debe ser https y del dominio de la empresa." },
+  "O aviso de rastreio já foi enviado.": { es: "El aviso de seguimiento ya fue enviado." },
 };
 
 
