@@ -466,6 +466,14 @@ const schema = z.object({
    */
   RESEND_API_KEY: z.string().optional().default(""),
   RESEND_FROM_EMAIL: z.string().optional().default(""),
+  /**
+   * sfy (etapa 10): ponte da TI da Climabrisa na frente do Microsys (consulta por NF-e).
+   * Vazio = pós-venda não consulta nada (o cron só avisa e segue).
+   */
+  MICROSYS_API_URL: z.string().optional().default(""),
+  MICROSYS_API_TOKEN: z.string().optional().default(""),
+  // Domínio da empresa (sem https): único aceito no link de rastreio e excluído como e-mail de cliente.
+  SFY_DOMINIO_DA_EMPRESA: z.string().optional().default(""),
 
   /**
    * SMTP — o SEGUNDO transporte de e-mail, ao lado da Resend, nunca no lugar

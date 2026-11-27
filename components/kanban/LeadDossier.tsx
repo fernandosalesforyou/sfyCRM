@@ -14,6 +14,7 @@ import { ContatoDoNegocio } from "./ContatoDoNegocio";
 import { AtalhosDoNegocio } from "./AtalhosDoCard";
 import { ConversaNoDossie } from "./ConversaNoDossie";
 import { EscreverEmailDoUsuario } from "./EscreverEmailDoUsuario";
+import { PosVendaDoNegocio } from "./PosVendaDoNegocio";
 import { LeadFieldsForm, type ControleDosCamposDoNegocio } from "./LeadFieldsForm";
 import { RevisaoDoDocumento } from "./RevisaoDoDocumento";
 import { ScoreSlot } from "./ScoreSlot";
@@ -264,6 +265,8 @@ export function LeadDossier({
         <AtalhosDoNegocio atalhos={atalhosDoCard} lead={lead} contactId={lead.contact_id} />
 
         <EscreverEmailDoUsuario leadId={lead.id} emailDoContato={lead.contact_email} podeEnviar={podeEditarTarefas} />
+
+        <PosVendaDoNegocio leadId={lead.id} podeAgir={podeEditarTarefas} />
 
         <ConversaNoDossie
           conversa={lead.conversa}

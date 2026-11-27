@@ -166,6 +166,9 @@ CRONS="
 # sfy (Bloco D): relatório semanal por parceiro e supervisor, toda segunda 12:00 UTC (09h de Brasília).
 # Os envios têm pausa entre si (número interno), por isso o limite de 900 s. Nasce desligado.
 0 12 * * 1|900|api/v1/cron/sfy-relatorio-semanal
+# sfy (etapa 10): pós-venda (rastreio, pergunta de instalação e manutenção), a cada 2 h das 08h às 18h de Brasília,
+# segunda a sábado (11 a 21 UTC). Só roda para quem ligou settings.sfy.pos_venda e só envia em horário comercial.
+0 11-21/2 * * 1-6|300|api/v1/cron/sfy-pos-venda
 40 4 * * *|120|api/v1/cron/data-retention
 0 8 * * *|60|api/v1/cron/proposal-expiry
 30 8 * * *|60|api/v1/cron/proposal-promised-not-created

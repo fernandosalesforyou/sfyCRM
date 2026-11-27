@@ -99,6 +99,7 @@ export const O_QUE_FICA = {
     "os campos que a IA leu num documento do negocio dele e propos para o card (o documento e os valores ficam no anexo)",
   orders: "os pedidos dele na loja",
   activities: "o que foi registrado sobre ele e quando",
+  pos_venda: "o acompanhamento dos pedidos dele depois da venda: nota fiscal, rastreio, instalação e as mensagens enviadas",
   checkpoints: "o resumo que a máquina fez da conversa com ele (LGPD art. 20)",
   mcp_pedidos_de_acesso: "os links de autorização gerados para ele acessar sistemas externos, e quando foram usados",
   mcp_acessos: "os sistemas externos que ele autorizou o agente a acessar, com os escopos e as datas (nunca o token)",

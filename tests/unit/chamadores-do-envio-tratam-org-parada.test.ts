@@ -23,6 +23,7 @@ const CHAMADORES: Record<string, string> = {
     "configDaEspera já nega a org parada antes de oferecer; se a suspensão chegar no meio, o aviso devolve false e a vaga é solta, sem nada gravado como enviado",
   "lib/campanhas/rodada.ts": TRATA, // registrarExcecaoDoEnvio, tests/unit/suspensao-nao-dispara-campanha.test.ts
   "lib/prospecting/worker.ts": TRATA, // tests/unit/prospecting-worker.test.ts
+  "lib/sfy/pos-venda-exec.ts": TRATA, // lib/sfy/pos-venda-exec.ts (devolve o carimbo sem contar tentativa; a sequência retoma na reativação)
   "lib/followup/enviar-texto-fixo.ts": TRATA, // lib/followup/enviar-texto-fixo.test.ts
   "lib/agent-engine/edge/crm/send-message.ts":
     "propaga o 403 como ApiError; sendWithLedger relança a suspensão e o agent-worker encerra o job terminal",
