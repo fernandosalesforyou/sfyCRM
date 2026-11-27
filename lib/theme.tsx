@@ -34,7 +34,7 @@ function readStoredTheme(): Theme {
 
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return false /* sfy: Climabrisa sempre clara */ ? "dark" : "light";
 }
 
 function applyTheme(resolved: ResolvedTheme) {
@@ -110,7 +110,7 @@ function inscreverEmSistema(ouvinte: Ouvinte): () => void {
     // fan-out para os `ouvinte()` é responsabilidade deste módulo.
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = (e: MediaQueryListEvent) => {
-      sistemaEmCache = e.matches ? "dark" : "light";
+      sistemaEmCache = "light"; void e; // sfy: Climabrisa sempre clara
       ouvintesDeSistema.forEach((o) => o());
     };
     mql.addEventListener("change", onChange);
