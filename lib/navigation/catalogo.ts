@@ -19,7 +19,7 @@ import type { CapacidadeDaOrganizacao } from "@/lib/organizacao/capacidades";
  */
 
 export type NavGroupId =
-  "comercial" | "atendimento" | "crm" | "ia" | "canais" | "analise" | "organizacao";
+  "interno" | "atendimento" | "crm" | "ia" | "canais" | "analise" | "organizacao";
 
 export interface NavGroup {
   id: NavGroupId;
@@ -93,7 +93,7 @@ export interface NavMetadata {
 export const NAV_GROUPS: NavGroup[] = [
   // sfy (Climabrisa): atalhos do dia a dia. Grupo SEM hub: os itens só sobem ao menu quando a
   // empresa os escolhe em "Menu lateral" (lista explícita), então o menu padrão não muda.
-  { id: "comercial", label: "Comercial" },
+  { id: "interno", label: "Interno" },
   { id: "atendimento", label: "Atendimento" },
   { id: "crm", label: "CRM", hub: { href: "/app/crm", label: "Ver tudo em CRM" } },
   { id: "ia", label: "Agente de IA", hub: { href: "/app/ai", label: "Ver tudo em IA" } },
@@ -933,23 +933,31 @@ export const NAV_CATALOG = [
   {
     // sfy (Bloco C): para quem o CRM encaminha cada cliente. Configuração de empresa, sem
     // `sidebar`: o cadastro se mexe de vez em quando. Gerente vê; só admin edita (a rota confere).
-    // sfy (Climabrisa): no grupo "Comercial" como "Representantes"; todos veem, só admin edita.
+    // sfy (Climabrisa): grupo "Interno"; todos veem, só admin edita.
     href: "/app/settings/parceiros",
-    label: "Representantes",
-    description:
-      "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.",
+    label: "Parceiros",
+    description: "Os representantes que recebem os clientes encaminhados, com cidades e contatos.",
     icon: "Users",
-    group: "comercial",
-    section: "Comercial",
+    group: "interno",
+    section: "Interno",
   },
   {
-    // sfy (Climabrisa): atalho para o funil principal (o marcado como padrão).
+    href: "/app/settings/supervisores",
+    label: "Supervisores",
+    description: "Os supervisores da Climabrisa e do Agro, e a quem cada parceiro responde.",
+    icon: "UsersThree",
+    group: "interno",
+    section: "Interno",
+  },
+  {
+    // sfy (Climabrisa): atalho para o funil principal (o marcado como padrão), no menu do CRM.
     href: "/app/funil-principal",
     label: "Funil de vendas",
     description: "Abre direto o quadro do funil principal da empresa.",
     icon: "Kanban",
-    group: "comercial",
-    section: "Comercial",
+    group: "crm",
+    section: "O dia a dia da venda",
+    sidebar: true,
   },
   {
     // sfy (Bloco D): fechamentos que os parceiros informam pelo link. Configuração de empresa, sem

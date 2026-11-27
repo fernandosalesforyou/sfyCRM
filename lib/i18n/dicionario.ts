@@ -19740,7 +19740,9 @@ export const DICIONARIO: Traducoes = {
   // ═══ sfy Bloco C: Parceiros e supervisores (distribuição) ═══
   "Parceiros e supervisores": { es: "Socios y supervisores" },
   "Representantes": { es: "Representantes" },
-  "Comercial": { es: "Comercial" },
+  "Interno": { es: "Interno" },
+  "Os representantes que recebem os clientes encaminhados, com cidades e contatos.": { es: "Los representantes que reciben los clientes derivados, con ciudades y contactos." },
+  "Os supervisores da Climabrisa e do Agro, e a quem cada parceiro responde.": { es: "Los supervisores de Climabrisa y de Agro, y a quién responde cada socio." },
   "Abre direto o quadro do funil principal da empresa.": { es: "Abre directamente el tablero del embudo principal de la empresa." },
   "Contatos de quem recebe os clientes encaminhados e a quem cada parceiro responde.": { es: "Contactos de quien recibe los clientes derivados y a quién responde cada socio." },
   "Para quem o CRM encaminha cada cliente. Parceiro sem WhatsApp e sem e-mail fica fora do rodízio até ter um contato. Desmarcar \"Ativo\" tira o parceiro do rodízio sem apagar o cadastro.": { es: "A quién deriva el CRM a cada cliente. Un socio sin WhatsApp ni correo queda fuera de la rotación hasta tener un contacto. Desmarcar \"Activo\" saca al socio de la rotación sin borrar el registro." },

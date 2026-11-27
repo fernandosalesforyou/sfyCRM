@@ -13,7 +13,7 @@ import { traduzir } from "@/lib/i18n/dicionario";
 
 import { PainelDeParceiros } from "./_painel";
 
-export const metadata = { title: "Representantes" };
+export const metadata = { title: "Parceiros" };
 export const dynamic = "force-dynamic";
 
 export default async function ParceirosPage() {
@@ -25,7 +25,7 @@ export default async function ParceirosPage() {
   return (
     <div className="flex h-full flex-col gap-6 overflow-y-auto p-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("Parceiros e supervisores")}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("Parceiros")}</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           {t(
             'Os parceiros do CRM são a lista oficial. Só quem está "Certificado, recebe leads" entra no rodízio; nos outros casos o lead da região vai para o supervisor. Parceiro sem WhatsApp e sem e-mail também fica fora até ter um contato.',
