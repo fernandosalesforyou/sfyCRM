@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useT } from "@/hooks/i18n/useT";
 import { useBoard } from "@/hooks/kanban/useBoard";
 import { useDensidadeDoQuadro } from "@/hooks/kanban/useDensidadeDoQuadro";
@@ -211,6 +212,7 @@ export function PipelinePageClient({
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [newOpen, setNewOpen] = useState(false);
+  const soConsulta = useSoConsulta();
   /**
    * A densidade dos cards do quadro (issue #3461, item 2). Preferência de quem
    * olha, gravada no navegador — ver `useDensidadeDoQuadro` para por que não é
@@ -435,7 +437,7 @@ export function PipelinePageClient({
               tela aberta direto na Lista (#3172, item 4 do CR) não há quadro, e
               um botão apagado ao lado de uma lista que abriu seria dizer que a
               aba não funciona. As etapas vêm da leitura leve. */}
-          {!arquivado && (
+          {!arquivado && !soConsulta && (
             <Button
               onClick={() => setNewOpen(true)}
               disabled={etapasIniciais.length === 0}

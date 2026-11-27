@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useContact } from "@/hooks/contacts/useContact";
 import { useContactList } from "@/hooks/contacts/useContactList";
 import { useUpdateContact } from "@/hooks/contacts/useUpdateContact";
@@ -108,6 +109,7 @@ export function ContatoDoNegocio({
   podeCriarContato = false,
 }: Props) {
   const t = useT();
+  const soConsulta = useSoConsulta();
   const qc = useQueryClient();
   const [criando, setCriando] = useState(false);
   const [vinculo, setVinculo] = useState<string | null | undefined>(undefined);
@@ -123,7 +125,7 @@ export function ContatoDoNegocio({
         />
       ) : (
         <SemContato
-          leadId={leadId ?? null}
+          leadId={soConsulta ? null : (leadId ?? null)}
           pipelineId={pipelineId}
           onVinculado={(id) => setVinculo(id)}
         />
@@ -371,9 +373,10 @@ function RodapeDoVinculo({
   onDesvinculado: () => void;
 }) {
   const t = useT();
+  const soConsulta = useSoConsulta();
   const [erro, setErro] = useState<string | null>(null);
   const editar = useEditLead(pipelineId);
-  if (!leadId) return null;
+  if (!leadId || soConsulta) return null;
 
   async function desvincular() {
     if (!leadId) return;
@@ -441,6 +444,7 @@ function RodapeDoVinculo({
  */
 function PessoasRelacionadas({ leadId }: { leadId: string | null }) {
   const t = useT();
+  const soConsulta = useSoConsulta();
   const { data, isLoading, isError } = useContatosRelacionados(leadId);
   if (!leadId) return null;
   if (isError) {
@@ -478,13 +482,13 @@ function PessoasRelacionadas({ leadId }: { leadId: string | null }) {
                   {t("Conversa")}
                 </Link>
               )}
-              <RemoverParticipante leadId={leadId} pessoa={pessoa} />
+              {!soConsulta && <RemoverParticipante leadId={leadId} pessoa={pessoa} />}
             </li>
           ))}
         </ul>
       )}
-      <AdicionarParticipante leadId={leadId} />
-      <AdicionarPeloTelefone leadId={leadId} />
+      {!soConsulta && <AdicionarParticipante leadId={leadId} />}
+      {!soConsulta && <AdicionarPeloTelefone leadId={leadId} />}
     </div>
   );
 }
@@ -816,6 +820,7 @@ function DadosDoContato({ contato }: { contato: Contact }) {
 
 function FormularioDeLinks({ contato, pipelineId }: { contato: Contact; pipelineId: string }) {
   const t = useT();
+  const soConsulta = useSoConsulta();
   const qc = useQueryClient();
   const atualizar = useUpdateContact(contato.id);
   const [valores, setValores] = useState<LinksDoContato>(() => lerLinks(contato.custom_fields));
@@ -852,7 +857,8 @@ function FormularioDeLinks({ contato, pipelineId }: { contato: Contact; pipeline
   }
 
   return (
-    <form onSubmit={salvar} className="space-y-3" data-testid="formulario-de-links">
+    <form onSubmit={salvar} data-testid="formulario-de-links">
+      <fieldset disabled={soConsulta} className="min-w-0 space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {TIPOS_DE_LINK.map(({ id, rotulo }) => {
           const href = normalizarLink(valores[id]);
@@ -892,6 +898,7 @@ function FormularioDeLinks({ contato, pipelineId }: { contato: Contact; pipeline
       <Button type="submit" size="sm" disabled={atualizar.isPending}>
         {atualizar.isPending ? t("Salvando…") : t("Salvar links")}
       </Button>
+      </fieldset>
     </form>
   );
 }

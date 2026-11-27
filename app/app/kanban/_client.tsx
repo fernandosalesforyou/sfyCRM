@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useActiveOrg } from "@/hooks/auth/AuthProvider";
 import { useT } from "@/hooks/i18n/useT";
 
@@ -104,6 +105,7 @@ export function FunisClient({
   podeImportar: boolean;
 }) {
   const t = useT();
+  const soConsulta = useSoConsulta();
   /**
    * O funil de clientes só tem efeito com a regra "Clientes pela agenda" ligada
    * (migration 0262): desligada, o roteamento ignora a marca. Botão e selo
@@ -748,7 +750,7 @@ export function FunisClient({
             "Quem já tem atendimento marcado entra pelo funil de clientes. Sem um funil marcado, entra pelo padrão.",
           )}
         </p>
-      ) : (
+      ) : soConsulta ? null : (
         <p className="mt-4 text-xs text-muted-foreground" data-testid="funis-rodape-clientes">
           {t(
             "Para separar quem já é cliente, ligue “Clientes pela agenda” em Configurações › Tipos de agendamento. Enquanto estiver desligado, todo contato novo entra pelo funil padrão.",

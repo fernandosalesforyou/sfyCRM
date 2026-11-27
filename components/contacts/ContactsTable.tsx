@@ -1,5 +1,6 @@
 "use client";
 
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useLocaleDeData } from "@/hooks/i18n/useLocaleDeData";
 
 import type { Locale } from "date-fns";
@@ -131,6 +132,7 @@ export function ContactsTable({
 }: Props) {
   const localeDaData = useLocaleDeData();
   const t = useT();
+  const soConsulta = useSoConsulta();
   const orgAtiva = useActiveOrg();
   const clientesLigado = orgAtiva?.cliente_pela_agenda === true;
   // O autocompletar de etiquetas do diálogo de edição (issue #2732): o mesmo
@@ -366,7 +368,7 @@ export function ContactsTable({
                       )}
                     </Link>
                   </Button>
-                ) : c.phone_number ? (
+                ) : c.phone_number && !soConsulta ? (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -381,7 +383,7 @@ export function ContactsTable({
                 ) : null}
                 {/* Issue #2715 — atalho de edição na linha: o MESMO diálogo da ficha (EditContactDialog), sem formulário novo. A lista já é invalidada pelo useUpdateContact (["contacts"]).
                     Anonimizado não ganha lápis, como na ficha: o servidor recusa com lgpd_anonymization_irreversible. */}
-                {!c.is_anonymized && (
+                {!c.is_anonymized && !soConsulta && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -393,16 +395,18 @@ export function ContactsTable({
                     <PencilSimple size={16} weight="regular" aria-hidden />
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-muted-foreground hover:text-error-fg md:h-8 md:w-8"
-                  title={t("Excluir contato")}
-                  aria-label={`${t("Excluir contato")} ${displayName(c, t)}`}
-                  onClick={() => setAlvo(c)}
-                >
-                  <Trash size={16} weight="regular" aria-hidden />
-                </Button>
+                {!soConsulta && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-error-fg md:h-8 md:w-8"
+                    title={t("Excluir contato")}
+                    aria-label={`${t("Excluir contato")} ${displayName(c, t)}`}
+                    onClick={() => setAlvo(c)}
+                  >
+                    <Trash size={16} weight="regular" aria-hidden />
+                  </Button>
+                )}
               </div>
             </TableCell>
           </TableRow>

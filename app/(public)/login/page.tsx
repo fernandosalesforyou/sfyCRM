@@ -18,7 +18,8 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; reset?: string; error?: string }>;
 }) {
   const { next, reset, error } = await searchParams;
-  const invite = typeof next === "string" ? next.match(/^\/team\/accept-invite\/([^/?#]+)$/)?.[1] : undefined;
+  const invite =
+    typeof next === "string" ? next.match(/^\/team\/accept-invite\/([^/?#]+)$/)?.[1] : undefined;
   const convite = invite ? verifyInviteToken(invite) : null;
   // Fora da árvore de `app/app/layout.tsx` — sem `IdiomaProvider` do lado do
   // servidor (o cliente já tem o seu, montado em `app/(public)/layout.tsx`).
@@ -33,13 +34,19 @@ export default async function LoginPage({
   );
   const t = (texto: string) => traduzir(texto, idioma);
   const marca = await marcaDaSaida(null);
+  // sfy: login enxuto (só logo, e-mail/senha e "Esqueci minha senha"), ligado por `.env`.
+  const simples = process.env.SFY_LOGIN_SIMPLES === "true";
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("Entrar")}</h1>
-        <p className="text-sm text-muted-foreground">{marca.nome}</p>
-      </div>
+      {simples ? (
+        <h1 className="sr-only">{t("Entrar")}</h1>
+      ) : (
+        <div className="space-y-1.5 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("Entrar")}</h1>
+          <p className="text-sm text-muted-foreground">{marca.nome}</p>
+        </div>
+      )}
       {reset === "success" && (
         <div
           className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm"
@@ -145,7 +152,7 @@ export default async function LoginPage({
         </div>
       )}
       <LoginForm next={next} email={convite?.email} />
-      <EntrarComGoogle next={next} />
+      {simples ? null : <EntrarComGoogle next={next} />}
       <div className="space-y-2 text-center text-sm">
         <p>
           <Link
@@ -155,15 +162,17 @@ export default async function LoginPage({
             {t("Esqueci minha senha")}
           </Link>
         </p>
-        <p className="text-muted-foreground">
-          {t("Não tem conta?")}{" "}
-          <Link
-            href={convite && invite ? `/signup?invite=${encodeURIComponent(invite)}` : "/signup"}
-            className="font-medium text-foreground underline underline-offset-4"
-          >
-            {t("Criar conta")}
-          </Link>
-        </p>
+        {simples ? null : (
+          <p className="text-muted-foreground">
+            {t("Não tem conta?")}{" "}
+            <Link
+              href={convite && invite ? `/signup?invite=${encodeURIComponent(invite)}` : "/signup"}
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              {t("Criar conta")}
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

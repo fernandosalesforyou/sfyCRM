@@ -1,5 +1,6 @@
 "use client";
 
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useTagDeIdioma } from "@/hooks/i18n/useLocaleDeData";
 import { useEffect, useRef, useState } from "react";
 
@@ -142,6 +143,7 @@ export function LeadDossier({
   // N1 — o atalho "Nova proposta" é manager+ (mesmo gate do envio, mesma
   // régua do BulkActionBar). O dossiê não tinha nenhuma checagem de papel;
   // esta é a primeira, no padrão já estabelecido do kanban.
+  const soConsulta = useSoConsulta();
   const user = useUser();
   const activeOrg = useActiveOrg();
   const podeCriarProposta =
@@ -232,18 +234,20 @@ export function LeadDossier({
             />
           )}
 
-          <button
-            type="button"
-            onClick={() => {
-              // Se os campos estiverem recolhidos, o clique também os abre:
-              // rolar até um título fechado entregaria um destino vazio.
-              abrir("dados-do-negocio");
-              setPedidoDeRolagem((n) => n + 1);
-            }}
-            className="ml-auto text-text-muted underline-offset-2 hover:text-text hover:underline"
-          >
-            {t("Editar campos")}
-          </button>
+          {!soConsulta && (
+            <button
+              type="button"
+              onClick={() => {
+                // Se os campos estiverem recolhidos, o clique também os abre:
+                // rolar até um título fechado entregaria um destino vazio.
+                abrir("dados-do-negocio");
+                setPedidoDeRolagem((n) => n + 1);
+              }}
+              className="ml-auto text-text-muted underline-offset-2 hover:text-text hover:underline"
+            >
+              {t("Editar campos")}
+            </button>
+          )}
         </div>
 
         {/* O score NÃO aparece na timeline: recálculo é telemetria e não emite

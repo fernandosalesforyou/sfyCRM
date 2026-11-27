@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSoConsulta } from "@/hooks/sfy/SoConsulta";
 import { useT } from "@/hooks/i18n/useT";
 import { Plus, DownloadSimple, MagnifyingGlass, UploadSimple, UsersThree, ArrowsClockwise } from "@/lib/ui/icons";
 import { Input } from "@/components/ui/input";
@@ -104,6 +105,7 @@ export function ContactsListClient() {
   // O portão de tela é o MESMO piso da edição individual (`contact.update` —
   // agent+); quem só lê nem vê a barra. (A rota ainda valida por conta própria:
   // este portão é de tela, a fonte da regra é a API.)
+  const soConsulta = useSoConsulta();
   const podeAgirEmLote = usePermission("contact.update");
   const podeMudarResponsavel = usePermission("contact.carteira");
   const selecao = useSelecaoEmLote();
@@ -212,14 +214,18 @@ export function ContactsListClient() {
             descobre olhando a lista, e a barra lateral não precisa crescer para
             um trabalho que se faz de vez em quando.
           */}
-          <Button variant="outline" onClick={() => setDuplicadosOpen(true)}>
-            <UsersThree size={16} weight="bold" aria-hidden />
-            <span>{t("Duplicados")}</span>
-          </Button>
-          <Button variant="outline" onClick={() => setImportOpen(true)}>
-            <UploadSimple size={16} weight="bold" aria-hidden />
-            <span>{t("Importar CSV")}</span>
-          </Button>
+          {!soConsulta && (
+            <Button variant="outline" onClick={() => setDuplicadosOpen(true)}>
+              <UsersThree size={16} weight="bold" aria-hidden />
+              <span>{t("Duplicados")}</span>
+            </Button>
+          )}
+          {!soConsulta && (
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <UploadSimple size={16} weight="bold" aria-hidden />
+              <span>{t("Importar CSV")}</span>
+            </Button>
+          )}
           {/*
             O lado de cá do mesmo gesto (#2736): a base que a equipe já tem
             mora na agenda do celular pareado, e ela não passa por CSV nenhum.
@@ -227,10 +233,12 @@ export function ContactsListClient() {
             fora", e separá-los em cantos diferentes da tela faria cada um
             parecer um recurso que o outro não é.
           */}
-          <Button variant="outline" onClick={() => setSyncOpen(true)}>
-            <ArrowsClockwise size={16} weight="bold" aria-hidden />
-            <span>{t("Sincronizar agenda")}</span>
-          </Button>
+          {!soConsulta && (
+            <Button variant="outline" onClick={() => setSyncOpen(true)}>
+              <ArrowsClockwise size={16} weight="bold" aria-hidden />
+              <span>{t("Sincronizar agenda")}</span>
+            </Button>
+          )}
           {/*
             A porta de VOLTA do mesmo dado: importar sem exportar deixava o CRM
             como saída única (SSH + psql), e o celular nem importa CSV — importa
@@ -256,10 +264,12 @@ export function ContactsListClient() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus size={16} weight="bold" aria-hidden />
-            <span>{t("Novo contato")}</span>
-          </Button>
+          {!soConsulta && (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus size={16} weight="bold" aria-hidden />
+              <span>{t("Novo contato")}</span>
+            </Button>
+          )}
         </div>
       </header>
 
