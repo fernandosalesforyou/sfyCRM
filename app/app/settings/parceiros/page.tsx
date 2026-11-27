@@ -13,14 +13,13 @@ import { traduzir } from "@/lib/i18n/dicionario";
 
 import { PainelDeParceiros } from "./_painel";
 
-export const metadata = { title: "Parceiros e supervisores" };
+export const metadata = { title: "Representantes" };
 export const dynamic = "force-dynamic";
 
 export default async function ParceirosPage() {
   const user = await requireAuth();
   const activeOrg = await resolveActiveOrg(user);
   if (!activeOrg) redirect("/app");
-  if (ROLE_RANK[activeOrg.role] < ROLE_RANK.manager) redirect("/403");
   const t = (texto: string) => traduzir(texto, user.idioma);
 
   return (
@@ -29,7 +28,7 @@ export default async function ParceirosPage() {
         <h1 className="text-2xl font-semibold tracking-tight">{t("Parceiros e supervisores")}</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           {t(
-            "Os parceiros do CRM são a lista oficial. Só quem está \"Certificado, recebe leads\" entra no rodízio; nos outros casos o lead da região vai para o supervisor. Parceiro sem WhatsApp e sem e-mail também fica fora até ter um contato.",
+            'Os parceiros do CRM são a lista oficial. Só quem está "Certificado, recebe leads" entra no rodízio; nos outros casos o lead da região vai para o supervisor. Parceiro sem WhatsApp e sem e-mail também fica fora até ter um contato.',
           )}
         </p>
       </header>

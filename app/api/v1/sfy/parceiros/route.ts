@@ -141,7 +141,7 @@ function erroDeValidacao(err: unknown, requestId: string): Response {
 
 export async function GET(): Promise<Response> {
   const requestId = randomUUID();
-  const authz = await requireRole("manager", { requestId, resource: "team" });
+  const authz = await requireRole("viewer", { requestId, resource: "team" });
   if (!authz.ok) return authz.response;
 
   const supabase = await createClient();

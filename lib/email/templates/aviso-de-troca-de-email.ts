@@ -41,7 +41,7 @@ export function buildAvisoDeTrocaDeEmail(opts: AvisoDeTrocaDeEmailOpcoes): {
 
   const html = `<!doctype html>
 <html lang="${opts.idioma}">
-<body style="margin:0;padding:0;background:${NEUTROS_DE_SAIDA.fundo};font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:${NEUTROS_DE_SAIDA.texto}">
+<body style="margin:0;padding:0;background:${NEUTROS_DE_SAIDA.fundo};font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:${NEUTROS_DE_SAIDA.texto}">
   <div style="max-width:560px;margin:0 auto;padding:32px 24px">
     ${logo}
     <h1 style="font-size:20px;line-height:1.3;margin:0 0 16px;color:${NEUTROS_DE_SAIDA.texto}">

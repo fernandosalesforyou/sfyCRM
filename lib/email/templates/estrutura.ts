@@ -19,7 +19,7 @@ export function estruturaDeEmail(marca: MarcaDeSaida, conteudo: string): string 
     : "";
   return `<!doctype html>
 <html lang="pt-BR">
-<body style="margin:0;padding:0;background:${NEUTROS_DE_SAIDA.fundo};font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:${NEUTROS_DE_SAIDA.texto}">
+<body style="margin:0;padding:0;background:${NEUTROS_DE_SAIDA.fundo};font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:${NEUTROS_DE_SAIDA.texto}">
   <div style="max-width:560px;margin:0 auto;padding:32px 24px">
     ${logo}
 ${conteudo}

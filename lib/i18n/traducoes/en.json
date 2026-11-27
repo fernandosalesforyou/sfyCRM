@@ -5263,7 +5263,7 @@
   "Muitas tentativas": "Too many attempts",
   "Aguarde alguns minutos e abra o link do convite de novo.": "Wait a few minutes and open the invitation link again.",
   "Convite inválido ou expirado": "Invalid or expired invitation",
-  "Este link não é válido ou já passou da janela de 24h. Peça um novo convite ao admin do tenant.": "This link isn't valid or the 24-hour window has already passed. Ask the tenant admin for a new invitation.",
+  "Este link não é válido ou já passou da janela de 24h. Peça um novo convite a quem administra o sistema.": "This link isn't valid or the 24-hour window has already passed. Ask the tenant admin for a new invitation.",
   "Você foi convidado": "You've been invited",
   "Para aceitar o convite como": "To accept the invitation as",
   "faça login com o email": "log in with the email",

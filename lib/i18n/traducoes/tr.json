@@ -3846,7 +3846,7 @@
   "Este horário não está disponível. Consulte os horários livres e escolha outro.": "Bu saat müsait değil. Boş saatlere bakıp başka birini seçin.",
   "Este já é o e-mail desta pessoa.": "Bu zaten bu kişinin e-postası.",
   "Este link está desativado e não abre o WhatsApp. Ative e salve para usar.": "Bu bağlantı devre dışı ve WhatsApp'ı açmaz. Kullanmak için etkinleştirip kaydedin.",
-  "Este link não é válido ou já passou da janela de 24h. Peça um novo convite ao admin do tenant.": "Bu bağlantı geçerli değil veya 24 saatlik süre geçti. Şirket yöneticinizden yeni bir davet isteyin.",
+  "Este link não é válido ou já passou da janela de 24h. Peça um novo convite a quem administra o sistema.": "Bu bağlantı geçerli değil veya 24 saatlik süre geçti. Şirket yöneticinizden yeni bir davet isteyin.",
   "Este link veio do modelo de e-mail padrão do Supabase, que não fecha o acesso nesta instalação — pedir outro link não resolve. Quem administra o sistema precisa configurar os modelos de e-mail: na nuvem do Supabase, com ": "Bu bağlantı Supabase'in varsayılan e-posta şablonundan geldi; bu şablon bu kurulumda erişimi kapatmıyor — başka bağlantı istemek sorunu çözmez. Sistemi yöneten kişinin e-posta şablonlarını yapılandırması gerekir: Supabase Cloud'da şununla: ",
   "Este material ainda não foi preparado — não há trecho nenhum para o agente encontrar.": "Bu materyal henüz hazırlanmadı — asistanın bulacağı hiçbir bölüm yok.",
   "Este modelo está em uso. Confirme para apagar assim mesmo.": "Bu şablon kullanımda. Yine de silmek için onaylayın.",

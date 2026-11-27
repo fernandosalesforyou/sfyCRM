@@ -3747,7 +3747,7 @@
   "Muitas tentativas": "尝试次数过多",
   "Aguarde alguns minutos e abra o link do convite de novo.": "请等待几分钟，然后重新打开邀请链接。",
   "Convite inválido ou expirado": "邀请无效或已过期",
-  "Este link não é válido ou já passou da janela de 24h. Peça um novo convite ao admin do tenant.": "此链接无效，或已超过 24 小时有效期。请向租户管理员索取新的邀请。",
+  "Este link não é válido ou já passou da janela de 24h. Peça um novo convite a quem administra o sistema.": "此链接无效，或已超过 24 小时有效期。请向租户管理员索取新的邀请。",
   "Você foi convidado": "您已被邀请",
   "Para aceitar o convite como": "要以以下身份接受邀请",
   "faça login com o email": "请使用该邮箱登录",
