@@ -20574,6 +20574,11 @@ export const DICIONARIO: Traducoes = {
   "A Meta bloqueou temporariamente o envio deste número por violação de política (código 368). Veja o motivo no Gerenciador do WhatsApp, na Meta.": { es: "Meta bloqueó temporalmente el envío de este número por infringir sus políticas (código 368). Mira el motivo en el Administrador de WhatsApp, en Meta." },
   "A Meta está recusando mensagens deste número (código {codigo}).": { es: "Meta está rechazando mensajes de este número (código {codigo})." },
   "Este aviso fecha sozinho quando uma mensagem voltar a ser entregue.": { es: "Este aviso se cierra solo cuando un mensaje vuelva a entregarse." },
+
+  // ═══ sfy: modo "em preparação" (primeiro acesso) ═══
+  "Esta área ainda está em preparação": { es: "Esta área todavía está en preparación" },
+  "Estamos configurando esta parte do sistema para a sua empresa. Ela será liberada assim que estiver pronta.": { es: "Estamos configurando esta parte del sistema para su empresa. Se habilitará en cuanto esté lista." },
+  "O que você já pode ver:": { es: "Lo que ya puede ver:" },
 };
 
 

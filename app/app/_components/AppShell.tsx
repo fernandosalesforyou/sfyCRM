@@ -11,6 +11,7 @@ import { useCrmAlerts } from "@/hooks/notifications/useCrmAlerts";
 import { useNotifyOpenFromServiceWorker } from "@/lib/notifications/notify_open";
 import { ensureNotifyServiceWorker } from "@/lib/notifications/service_worker";
 import { estiloDaReserva, useOcupacaoDoRodape } from "@/lib/ui/rodape-ocupado";
+import { PortaoDePreparacao } from "./PortaoDePreparacao";
 
 interface AppShellProps {
   sidebarCollapsed: boolean;
@@ -23,10 +24,17 @@ interface AppShellProps {
    * 403 a cada minuto em nome de ninguém.
    */
   podeAtender: boolean;
+  /** sfy — telas prontas no modo "em preparação"; ausente = modo desligado. */
+  telasLiberadas?: readonly string[] | null;
   children: ReactNode;
 }
 
-export function AppShell({ sidebarCollapsed, podeAtender, children }: AppShellProps) {
+export function AppShell({
+  sidebarCollapsed,
+  podeAtender,
+  telasLiberadas,
+  children,
+}: AppShellProps) {
   useInboundMessageAlerts();
   useInboundCallAlerts();
   useCrmAlerts();
@@ -114,7 +122,11 @@ export function AppShell({ sidebarCollapsed, podeAtender, children }: AppShellPr
           style={estiloDaReserva(ocupacaoDoRodape)}
           data-rodape-ocupado={ocupacaoDoRodape}
         >
-          {children}
+          {telasLiberadas ? (
+            <PortaoDePreparacao liberadas={telasLiberadas}>{children}</PortaoDePreparacao>
+          ) : (
+            children
+          )}
         </main>
       </div>
       {/*

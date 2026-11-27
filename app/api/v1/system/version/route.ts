@@ -164,13 +164,19 @@ export async function GET(_req: NextRequest): Promise<Response> {
   // honesta — não há o que avisar.
   const smtpConfigurado = !(await semSmtpNaInstalacao());
 
+  // sfy — instalação entregue a um cliente: a tela não mostra o histórico do
+  // projeto de origem (que credita pessoas de fora) nem a versão publicada lá.
+  const semNotas = process.env.SFY_SEM_NOTAS_DE_VERSAO === "true";
+
   return ok({
     current_version: running,
     identity,
     runtime_services: observation.success ? observation.data.services : null,
-    official_latest_version: observation.success
-      ? (observation.data.published_release ?? "")
-      : (version?.latest_version ?? ""),
+    official_latest_version: semNotas
+      ? ""
+      : observation.success
+        ? (observation.data.published_release ?? "")
+        : (version?.latest_version ?? ""),
     manual_reconciliation_required: identity.customized === true,
     is_owner: true,
     force_update_supported: supportsForcedUpdate(
@@ -233,7 +239,7 @@ export async function GET(_req: NextRequest): Promise<Response> {
     // versão-alvo viaja no `run`, para a tela nomeá-la como pedido.
     just_updated: acabouDeInstalar,
     notes:
-      faixa && faixa.secoes.length > 0
+      !semNotas && faixa && faixa.secoes.length > 0
         ? {
             // Consolidados no topo, cada um dizendo de que versão veio: numa
             // faixa de várias versões, "reconecte o número" sem dizer de qual
