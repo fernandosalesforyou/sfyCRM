@@ -17,7 +17,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/hooks/i18n/useT";
 import { apiClient } from "@/lib/api/client";
-import { SITUACOES, situacaoDosCampos, type ImpactoDasCidades, type Situacao } from "@/lib/sfy/cadastro";
+import {
+  SITUACOES,
+  situacaoDosCampos,
+  type ImpactoDasCidades,
+  type Situacao,
+} from "@/lib/sfy/cadastro";
 import type { DestinoEscolhido } from "@/lib/sfy/distribuicao";
 import { UFS_DO_BRASIL as UFS } from "@/lib/sfy/supervisores";
 
@@ -49,7 +54,14 @@ interface CidadeDoParceiro {
   nome: string;
   codigo_ibge: number | null;
 }
-type Filtro = "todos" | "recebem" | "pausados" | "nao_certificados" | "sairam" | "sem_contato" | "sem_supervisor";
+type Filtro =
+  | "todos"
+  | "recebem"
+  | "pausados"
+  | "nao_certificados"
+  | "sairam"
+  | "sem_contato"
+  | "sem_supervisor";
 
 function rotuloDaSituacao(s: Situacao, t: (x: string) => string): string {
   switch (s) {
@@ -90,7 +102,11 @@ function Simulador() {
   const consulta = useMutation({
     mutationFn: async () => {
       const q = new URLSearchParams({ categoria, cidade: cidade.trim(), uf });
-      return (await apiClient.get<{ data: { destino: DestinoEscolhido } }>(`/api/v1/sfy/destino?${q.toString()}`)).data.destino;
+      return (
+        await apiClient.get<{ data: { destino: DestinoEscolhido } }>(
+          `/api/v1/sfy/destino?${q.toString()}`,
+        )
+      ).data.destino;
     },
     onError: showApiError,
   });
@@ -107,14 +123,23 @@ function Simulador() {
         <div className="grid gap-3 sm:grid-cols-[10rem_1fr_6rem_auto] sm:items-end">
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             {t("Categoria")}
-            <select className={CAMPO} value={categoria} onChange={(e) => setCategoria(e.target.value as "climabrisa" | "agro")}>
+            <select
+              className={CAMPO}
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value as "climabrisa" | "agro")}
+            >
               <option value="climabrisa">{t("Climabrisa")}</option>
               <option value="agro">{t("Agro")}</option>
             </select>
           </label>
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             {t("Cidade")}
-            <Input className="min-h-11" value={cidade} onChange={(e) => setCidade(e.target.value)} disabled={categoria === "agro"} />
+            <Input
+              className="min-h-11"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+              disabled={categoria === "agro"}
+            />
           </label>
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             {t("UF")}
@@ -127,7 +152,12 @@ function Simulador() {
               ))}
             </select>
           </label>
-          <Button type="button" className="min-h-11" disabled={!pronto || consulta.isPending} onClick={() => consulta.mutate()}>
+          <Button
+            type="button"
+            className="min-h-11"
+            disabled={!pronto || consulta.isPending}
+            onClick={() => consulta.mutate()}
+          >
             {t("Ver destino")}
           </Button>
         </div>
@@ -157,7 +187,13 @@ function Simulador() {
 }
 
 /** Cria um parceiro: nasce sem receber lead até alguém escolher a situação. */
-function NovoParceiro({ supervisores, aoCriar }: { supervisores: Supervisor[]; aoCriar: () => void }) {
+function NovoParceiro({
+  supervisores,
+  aoCriar,
+}: {
+  supervisores: Supervisor[];
+  aoCriar: () => void;
+}) {
   const t = useT();
   const [aberto, setAberto] = useState(false);
   const [codigo, setCodigo] = useState("");
@@ -165,7 +201,11 @@ function NovoParceiro({ supervisores, aoCriar }: { supervisores: Supervisor[]; a
   const [supervisorId, setSupervisorId] = useState("");
   const criar = useMutation({
     mutationFn: () =>
-      apiClient.post(ROTA, { codigo: codigo.trim(), nome: nome.trim(), supervisor_id: supervisorId || null }),
+      apiClient.post(ROTA, {
+        codigo: codigo.trim(),
+        nome: nome.trim(),
+        supervisor_id: supervisorId || null,
+      }),
     onSuccess: () => {
       toast.success(t("Parceiro criado."));
       setCodigo("");
@@ -178,7 +218,12 @@ function NovoParceiro({ supervisores, aoCriar }: { supervisores: Supervisor[]; a
   });
   if (!aberto) {
     return (
-      <Button type="button" variant="outline" className="min-h-11 self-start" onClick={() => setAberto(true)}>
+      <Button
+        type="button"
+        variant="outline"
+        className="min-h-11 self-start"
+        onClick={() => setAberto(true)}
+      >
         {t("Novo parceiro")}
       </Button>
     );
@@ -196,7 +241,11 @@ function NovoParceiro({ supervisores, aoCriar }: { supervisores: Supervisor[]; a
         </label>
         <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2">
           {t("Supervisor")}
-          <select className={CAMPO} value={supervisorId} onChange={(e) => setSupervisorId(e.target.value)}>
+          <select
+            className={CAMPO}
+            value={supervisorId}
+            onChange={(e) => setSupervisorId(e.target.value)}
+          >
             <option value="">{t("Sem supervisor")}</option>
             {supervisores.map((s) => (
               <option key={s.id} value={s.id}>
@@ -207,10 +256,17 @@ function NovoParceiro({ supervisores, aoCriar }: { supervisores: Supervisor[]; a
         </label>
       </div>
       <p className="text-xs text-muted-foreground">
-        {t("O parceiro novo começa como \"Não é certificado\" e só recebe lead depois que você escolher a situação.")}
+        {t(
+          'O parceiro novo começa como "Não é certificado" e só recebe lead depois que você escolher a situação.',
+        )}
       </p>
       <div className="flex gap-2">
-        <Button type="button" className="min-h-11" disabled={!codigo.trim() || !nome.trim() || criar.isPending} onClick={() => criar.mutate()}>
+        <Button
+          type="button"
+          className="min-h-11"
+          disabled={!codigo.trim() || !nome.trim() || criar.isPending}
+          onClick={() => criar.mutate()}
+        >
           {t("Criar parceiro")}
         </Button>
         <Button type="button" variant="ghost" className="min-h-11" onClick={() => setAberto(false)}>
@@ -221,10 +277,22 @@ function NovoParceiro({ supervisores, aoCriar }: { supervisores: Supervisor[]; a
   );
 }
 
-const semAcento = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const semAcento = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 
 /** As cidades de um parceiro: lista, busca no IBGE (ou nome escrito) e troca com aviso do impacto. */
-function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parceiro: Parceiro; podeEditar: boolean; municipiosCarregados: boolean }) {
+function EditorDeCidades({
+  parceiro,
+  podeEditar,
+  municipiosCarregados,
+}: {
+  parceiro: Parceiro;
+  podeEditar: boolean;
+  municipiosCarregados: boolean;
+}) {
   const t = useT();
   const qc = useQueryClient();
   const rota = `${ROTA}/${parceiro.id}/cidades`;
@@ -233,15 +301,18 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
 
   const atuais = useQuery({
     queryKey: ["sfy", "parceiro-cidades", parceiro.id],
-    queryFn: async () => (await apiClient.get<{ data: { cidades: CidadeDoParceiro[] } }>(rota)).data.cidades,
+    queryFn: async () =>
+      (await apiClient.get<{ data: { cidades: CidadeDoParceiro[] } }>(rota)).data.cidades,
   });
   const achadas = useQuery({
     queryKey: ["sfy", "municipios", uf, q],
     enabled: uf.length === 2 && municipiosCarregados,
     queryFn: async () =>
-      (await apiClient.get<{ data: { municipios: { codigo_ibge: number; nome: string; uf: string }[] } }>(
-        `/api/v1/sfy/municipios?uf=${uf}&q=${encodeURIComponent(q)}`,
-      )).data.municipios,
+      (
+        await apiClient.get<{
+          data: { municipios: { codigo_ibge: number; nome: string; uf: string }[] };
+        }>(`/api/v1/sfy/municipios?uf=${uf}&q=${encodeURIComponent(q)}`)
+      ).data.municipios,
   });
 
   const trocar = useMutation({
@@ -255,12 +326,17 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
     onSuccess: (r) => {
       toast.success(t("Cidades atualizadas."));
       const i = r.data;
-      if (i.recalculo?.erro) toast.warning(t("Salvo, mas o supervisor das cidades não foi recalculado. Tente de novo."));
+      if (i.recalculo?.erro)
+        toast.warning(t("Salvo, mas o supervisor das cidades não foi recalculado. Tente de novo."));
       if (i.entram_em_rodizio > 0) {
-        toast.info(`${i.entram_em_rodizio} ${t("cidades passam a ter mais de um parceiro (rodízio).")}`);
+        toast.info(
+          `${i.entram_em_rodizio} ${t("cidades passam a ter mais de um parceiro (rodízio).")}`,
+        );
       }
       if (i.ficam_sem_parceiro > 0) {
-        toast.warning(`${i.ficam_sem_parceiro} ${t("cidades ficaram sem parceiro e vão para o supervisor.")}`);
+        toast.warning(
+          `${i.ficam_sem_parceiro} ${t("cidades ficaram sem parceiro e vão para o supervisor.")}`,
+        );
       }
       void qc.invalidateQueries({ queryKey: ["sfy", "parceiro-cidades", parceiro.id] });
       void qc.invalidateQueries({ queryKey: CHAVE });
@@ -281,12 +357,18 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
   return (
     <div className="flex flex-col gap-3 border-t pt-3">
       <h3 className="text-sm font-medium">{t("Cidades atendidas")}</h3>
-      <div className="flex max-h-56 flex-wrap gap-2 overflow-y-auto" aria-label={t("Cidades atendidas")}>
+      <div
+        className="flex max-h-56 flex-wrap gap-2 overflow-y-auto"
+        aria-label={t("Cidades atendidas")}
+      >
         {(atuais.data ?? []).length === 0 && !atuais.isLoading && (
           <p className="text-sm text-muted-foreground">{t("Nenhuma cidade ainda.")}</p>
         )}
         {(atuais.data ?? []).map((c) => (
-          <span key={`${c.uf}|${c.cidade_norm}`} className="inline-flex min-h-9 items-center gap-1 rounded-full border bg-muted/40 pl-3 text-xs">
+          <span
+            key={`${c.uf}|${c.cidade_norm}`}
+            className="inline-flex min-h-9 items-center gap-1 rounded-full border bg-muted/40 pl-3 text-xs"
+          >
             {c.nome} · {c.uf}
             {podeEditar && (
               <button
@@ -295,7 +377,11 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
                 aria-label={`${t("Remover")}: ${c.nome}`}
                 disabled={trocar.isPending}
                 onClick={() =>
-                  trocar.mutate(c.codigo_ibge ? { remover: [c.codigo_ibge] } : { remover_nomes: [{ uf: c.uf, cidade_norm: c.cidade_norm }] })
+                  trocar.mutate(
+                    c.codigo_ibge
+                      ? { remover: [c.codigo_ibge] }
+                      : { remover_nomes: [{ uf: c.uf, cidade_norm: c.cidade_norm }] },
+                  )
                 }
               >
                 ×
@@ -307,11 +393,18 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
       {podeEditar && (
         <div className="flex flex-col gap-2">
           {!municipiosCarregados ? (
-            <p className="text-sm text-muted-foreground">{t("A lista de municípios do IBGE ainda não foi carregada.")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("A lista de municípios do IBGE ainda não foi carregada.")}
+            </p>
           ) : (
             <>
               <div className="grid gap-2 sm:grid-cols-[6rem_1fr]">
-                <select className={CAMPO} aria-label={t("UF")} value={uf} onChange={(e) => setUf(e.target.value)}>
+                <select
+                  className={CAMPO}
+                  aria-label={t("UF")}
+                  value={uf}
+                  onChange={(e) => setUf(e.target.value)}
+                >
                   <option value="">{t("UF")}</option>
                   {UFS.map((u) => (
                     <option key={u} value={u}>
@@ -319,7 +412,13 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
                     </option>
                   ))}
                 </select>
-                <Input className="min-h-11" placeholder={t("Buscar cidade")} value={q} onChange={(e) => setQ(e.target.value)} disabled={!uf} />
+                <Input
+                  className="min-h-11"
+                  placeholder={t("Buscar cidade")}
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  disabled={!uf}
+                />
               </div>
               {uf && achadas.data && achadas.data.length === 0 && (
                 <p className="text-sm text-muted-foreground">{t("Nenhuma cidade encontrada.")}</p>
@@ -329,14 +428,21 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-auto min-h-11 whitespace-normal text-left"
+                    className="h-auto min-h-11 text-left whitespace-normal"
                     disabled={trocar.isPending}
-                    onClick={() => trocar.mutate({ adicionar_livres: [{ uf, nome: escrito }] }, { onSuccess: () => setQ("") })}
+                    onClick={() =>
+                      trocar.mutate(
+                        { adicionar_livres: [{ uf, nome: escrito }] },
+                        { onSuccess: () => setQ("") },
+                      )
+                    }
                   >
                     {t("Incluir como distrito ou povoado:")} {escrito} · {uf}
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    {t("Confira a grafia: o lead só é encontrado se a localidade for escrita do mesmo jeito (acentos e maiúsculas não importam).")}
+                    {t(
+                      "Confira a grafia: o lead só é encontrado se a localidade for escrita do mesmo jeito (acentos e maiúsculas não importam).",
+                    )}
                   </p>
                 </div>
               )}
@@ -366,7 +472,14 @@ function EditorDeCidades({ parceiro, podeEditar, municipiosCarregados }: { parce
   );
 }
 
-export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
+export function PainelDeParceiros({
+  podeEditar,
+  mostrar = "parceiros",
+}: {
+  podeEditar: boolean;
+  /** sfy: parceiros e supervisores em abas separadas do menu. */
+  mostrar?: "parceiros" | "supervisores";
+}) {
   const t = useT();
   const qc = useQueryClient();
   const [busca, setBusca] = useState("");
@@ -379,11 +492,18 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
   });
 
   const salvar = useMutation({
-    mutationFn: (e: Edicao) => apiClient.put<{ data: { recalculo?: { erro?: string } | null; opcoes?: { erro?: string } | null } }>(ROTA, e),
+    mutationFn: (e: Edicao) =>
+      apiClient.put<{
+        data: { recalculo?: { erro?: string } | null; opcoes?: { erro?: string } | null };
+      }>(ROTA, e),
     onSuccess: (r) => {
       toast.success(t("Cadastro atualizado."));
-      if (r.data.recalculo?.erro) toast.warning(t("Salvo, mas o supervisor das cidades não foi recalculado. Tente de novo."));
-      if (r.data.opcoes?.erro) toast.warning(t("Salvo, mas a lista de parceiros dos negócios não foi atualizada. Tente de novo."));
+      if (r.data.recalculo?.erro)
+        toast.warning(t("Salvo, mas o supervisor das cidades não foi recalculado. Tente de novo."));
+      if (r.data.opcoes?.erro)
+        toast.warning(
+          t("Salvo, mas a lista de parceiros dos negócios não foi atualizada. Tente de novo."),
+        );
       void qc.invalidateQueries({ queryKey: CHAVE });
     },
     onError: (e) => {
@@ -392,7 +512,10 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
     },
   });
 
-  const supervisoresClima = useMemo(() => (data?.supervisores ?? []).filter((s) => s.categoria === "climabrisa"), [data]);
+  const supervisoresClima = useMemo(
+    () => (data?.supervisores ?? []).filter((s) => s.categoria === "climabrisa"),
+    [data],
+  );
   const supervisoresAtivos = supervisoresClima.filter((s) => s.ativo);
   const parceiros = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -408,13 +531,15 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
     });
   }, [data, busca, filtro]);
 
-  if (isLoading || !data) return <p className="text-sm text-muted-foreground">{t("Carregando...")}</p>;
+  if (isLoading || !data)
+    return <p className="text-sm text-muted-foreground">{t("Carregando...")}</p>;
 
   const todos = data.parceiros;
   // Só quem ainda está na empresa conta como "parceiro do supervisor".
   const porSupervisor = new Map<string, number>();
   for (const p of todos) {
-    if (p.ativo && p.supervisor_id) porSupervisor.set(p.supervisor_id, (porSupervisor.get(p.supervisor_id) ?? 0) + 1);
+    if (p.ativo && p.supervisor_id)
+      porSupervisor.set(p.supervisor_id, (porSupervisor.get(p.supervisor_id) ?? 0) + 1);
   }
   const contagem = {
     recebem: todos.filter((p) => situacaoDosCampos(p) === "certificado_recebe").length,
@@ -428,29 +553,46 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
       return n;
     });
 
+  if (mostrar === "supervisores") {
+    return (
+      <div className="flex flex-col gap-8">
+        <Supervisores
+          supervisores={data.supervisores}
+          parceirosPorSupervisor={porSupervisor}
+          podeEditar={podeEditar}
+          salvando={salvar.isPending}
+          salvar={(e, aoSalvar) => salvar.mutate(e, { onSuccess: aoSalvar })}
+          aoCriar={() => void qc.invalidateQueries({ queryKey: CHAVE })}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <Simulador />
-
-      <Supervisores
-        supervisores={data.supervisores}
-        parceirosPorSupervisor={porSupervisor}
-        podeEditar={podeEditar}
-        salvando={salvar.isPending}
-        salvar={(e, aoSalvar) => salvar.mutate(e, { onSuccess: aoSalvar })}
-        aoCriar={() => void qc.invalidateQueries({ queryKey: CHAVE })}
-      />
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-medium">{t("Parceiros")}</h2>
           <span className="text-xs text-muted-foreground">
-            {todos.length} {t("parceiros")} · {contagem.recebem} {t("recebem leads")} · {contagem.semContato} {t("sem nenhum contato")}
+            {todos.length} {t("parceiros")} · {contagem.recebem} {t("recebem leads")} ·{" "}
+            {contagem.semContato} {t("sem nenhum contato")}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Input className="min-h-11 max-w-xs" placeholder={t("Buscar por código ou nome")} value={busca} onChange={(e) => setBusca(e.target.value)} />
-          <select className={`${CAMPO} max-w-[14rem]`} aria-label={t("Filtrar")} value={filtro} onChange={(e) => setFiltro(e.target.value as Filtro)}>
+          <Input
+            className="min-h-11 max-w-xs"
+            placeholder={t("Buscar por código ou nome")}
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+          <select
+            className={`${CAMPO} max-w-[14rem]`}
+            aria-label={t("Filtrar")}
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value as Filtro)}
+          >
             <option value="todos">{t("Todos")}</option>
             <option value="recebem">{t("Recebem leads")}</option>
             <option value="pausados">{t("Pausados")}</option>
@@ -459,7 +601,12 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
             <option value="sem_contato">{t("Só sem contato")}</option>
             <option value="sem_supervisor">{t("Sem supervisor")}</option>
           </select>
-          {podeEditar && <NovoParceiro supervisores={supervisoresAtivos} aoCriar={() => void qc.invalidateQueries({ queryKey: CHAVE })} />}
+          {podeEditar && (
+            <NovoParceiro
+              supervisores={supervisoresAtivos}
+              aoCriar={() => void qc.invalidateQueries({ queryKey: CHAVE })}
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -479,7 +626,8 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
                       disabled={!podeEditar || salvar.isPending}
                       onBlur={(e) => {
                         const novo = e.target.value.trim();
-                        if (novo && novo !== p.nome) salvar.mutate({ tipo: "parceiro", id: p.id, nome: novo });
+                        if (novo && novo !== p.nome)
+                          salvar.mutate({ tipo: "parceiro", id: p.id, nome: novo });
                       }}
                     />
                   </label>
@@ -490,7 +638,13 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
                       aria-label={`${t("Situação")}: ${p.nome}`}
                       value={situacao}
                       disabled={!podeEditar || salvar.isPending}
-                      onChange={(e) => salvar.mutate({ tipo: "parceiro", id: p.id, situacao: e.target.value as Situacao })}
+                      onChange={(e) =>
+                        salvar.mutate({
+                          tipo: "parceiro",
+                          id: p.id,
+                          situacao: e.target.value as Situacao,
+                        })
+                      }
                     >
                       {SITUACOES.map((s) => (
                         <option key={s} value={s}>
@@ -508,25 +662,41 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
                       aria-label={`${t("Supervisor")}: ${p.nome}`}
                       value={p.supervisor_id ?? ""}
                       disabled={!podeEditar || salvar.isPending}
-                      onChange={(e) => salvar.mutate({ tipo: "parceiro", id: p.id, supervisor_id: e.target.value || null })}
+                      onChange={(e) =>
+                        salvar.mutate({
+                          tipo: "parceiro",
+                          id: p.id,
+                          supervisor_id: e.target.value || null,
+                        })
+                      }
                     >
                       <option value="">{t("Sem supervisor")}</option>
-                      {supervisoresClima.filter((s) => s.ativo || s.id === p.supervisor_id).map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.nome}
-                        </option>
-                      ))}
+                      {supervisoresClima
+                        .filter((s) => s.ativo || s.id === p.supervisor_id)
+                        .map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.nome}
+                          </option>
+                        ))}
                     </select>
                   </label>
                   <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                     {t("WhatsApp")}
-                    <Contato valor={p.whatsapp} rotulo={`${t("WhatsApp")}: ${p.nome}`} desabilitado={!podeEditar || salvar.isPending}
-                      aoSalvar={(v) => salvar.mutate({ tipo: "parceiro", id: p.id, whatsapp: v })} />
+                    <Contato
+                      valor={p.whatsapp}
+                      rotulo={`${t("WhatsApp")}: ${p.nome}`}
+                      desabilitado={!podeEditar || salvar.isPending}
+                      aoSalvar={(v) => salvar.mutate({ tipo: "parceiro", id: p.id, whatsapp: v })}
+                    />
                   </label>
                   <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                     {t("E-mail")}
-                    <Contato valor={p.email} rotulo={`${t("E-mail")}: ${p.nome}`} desabilitado={!podeEditar || salvar.isPending}
-                      aoSalvar={(v) => salvar.mutate({ tipo: "parceiro", id: p.id, email: v })} />
+                    <Contato
+                      valor={p.email}
+                      rotulo={`${t("E-mail")}: ${p.nome}`}
+                      desabilitado={!podeEditar || salvar.isPending}
+                      aoSalvar={(v) => salvar.mutate({ tipo: "parceiro", id: p.id, email: v })}
+                    />
                   </label>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -534,12 +704,21 @@ export function PainelDeParceiros({ podeEditar }: { podeEditar: boolean }) {
                     {p.cidades} {t("cidades")}
                     {!p.whatsapp && !p.email ? ` · ${t("sem nenhum contato")}` : ""}
                   </span>
-                  <Button type="button" variant="outline" className="min-h-11" onClick={() => alterna(p.id)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => alterna(p.id)}
+                  >
                     {abertos.has(p.id) ? t("Fechar") : t("Editar cidades")}
                   </Button>
                 </div>
                 {abertos.has(p.id) && (
-                  <EditorDeCidades parceiro={p} podeEditar={podeEditar} municipiosCarregados={data.municipios_carregados} />
+                  <EditorDeCidades
+                    parceiro={p}
+                    podeEditar={podeEditar}
+                    municipiosCarregados={data.municipios_carregados}
+                  />
                 )}
               </Card>
             );
