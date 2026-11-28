@@ -19740,6 +19740,8 @@ export const DICIONARIO: Traducoes = {
   // ═══ sfy Bloco C: Parceiros e supervisores (distribuição) ═══
   "Parceiros e supervisores": { es: "Socios y supervisores" },
   "Representantes": { es: "Representantes" },
+  "Ver detalhes do atendimento pelo WhatsApp": { es: "Ver detalles de la atención por WhatsApp" },
+  "Indicadores comerciais da Climabrisa e o atendimento pelo WhatsApp.": { es: "Indicadores comerciales de Climabrisa y la atención por WhatsApp." },
   "Interno": { es: "Interno" },
   "Os representantes que recebem os clientes encaminhados, com cidades e contatos.": { es: "Los representantes que reciben los clientes derivados, con ciudades y contactos." },
   "Os supervisores da Climabrisa e do Agro, e a quem cada parceiro responde.": { es: "Los supervisores de Climabrisa y de Agro, y a quién responde cada socio." },
