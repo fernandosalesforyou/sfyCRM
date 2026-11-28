@@ -13,11 +13,52 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/hooks/i18n/useT";
 import { apiClient } from "@/lib/api/client";
-import { lerUfs } from "@/lib/sfy/supervisores";
+import { UFS_DO_BRASIL } from "@/lib/sfy/supervisores";
 
 import { CAMPO, Contato, type Edicao, type Supervisor } from "./_comum";
 
 type Categoria = Supervisor["categoria"];
+
+/** sfy: estados escolhidos por botões (sem digitação), para evitar erro de sigla. */
+function SeletorDeUfs({
+  valor,
+  aoMudar,
+  desabilitado,
+  rotulo,
+}: {
+  valor: string[];
+  aoMudar: (ufs: string[]) => void;
+  desabilitado?: boolean;
+  rotulo: string;
+}) {
+  const marcadas = new Set(valor);
+  return (
+    <div role="group" aria-label={rotulo} className="flex flex-wrap gap-1.5">
+      {UFS_DO_BRASIL.map((u) => {
+        const ativo = marcadas.has(u);
+        return (
+          <button
+            key={u}
+            type="button"
+            aria-pressed={ativo}
+            disabled={desabilitado}
+            onClick={() =>
+              aoMudar(UFS_DO_BRASIL.filter((x) => (x === u ? !ativo : marcadas.has(x))))
+            }
+            className={
+              "min-h-9 min-w-11 rounded-md border px-2 text-xs font-medium transition-colors disabled:opacity-50 " +
+              (ativo
+                ? "border-primary bg-primary text-primary-foreground"
+                : "bg-background hover:bg-muted")
+            }
+          >
+            {u}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function NovoSupervisor({ aoCriar }: { aoCriar: () => void }) {
   const t = useT();
@@ -26,8 +67,7 @@ function NovoSupervisor({ aoCriar }: { aoCriar: () => void }) {
   const [categoria, setCategoria] = useState<Categoria>("climabrisa");
   const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
-  const [estados, setEstados] = useState("");
-  const lidas = lerUfs(estados);
+  const [estados, setEstados] = useState<string[]>([]);
   const criar = useMutation({
     mutationFn: () =>
       apiClient.post("/api/v1/sfy/supervisores", {
@@ -35,14 +75,14 @@ function NovoSupervisor({ aoCriar }: { aoCriar: () => void }) {
         categoria,
         whatsapp: whatsapp.trim() || null,
         email: email.trim() || null,
-        ...(categoria === "agro" ? { ufs: lidas.ufs } : {}),
+        ...(categoria === "agro" ? { ufs: estados } : {}),
       }),
     onSuccess: () => {
       toast.success(t("Supervisor criado."));
       setNome("");
       setWhatsapp("");
       setEmail("");
-      setEstados("");
+      setEstados([]);
       setAberto(false);
       aoCriar();
     },
@@ -50,7 +90,12 @@ function NovoSupervisor({ aoCriar }: { aoCriar: () => void }) {
   });
   if (!aberto) {
     return (
-      <Button type="button" variant="outline" className="min-h-11 self-start" onClick={() => setAberto(true)}>
+      <Button
+        type="button"
+        variant="outline"
+        className="min-h-11 self-start"
+        onClick={() => setAberto(true)}
+      >
         {t("Novo supervisor")}
       </Button>
     );
@@ -64,14 +109,22 @@ function NovoSupervisor({ aoCriar }: { aoCriar: () => void }) {
         </label>
         <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           {t("Categoria")}
-          <select className={CAMPO} value={categoria} onChange={(e) => setCategoria(e.target.value as Categoria)}>
+          <select
+            className={CAMPO}
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value as Categoria)}
+          >
             <option value="climabrisa">{t("Climabrisa")}</option>
             <option value="agro">{t("Agro")}</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           {t("WhatsApp")}
-          <Input className="min-h-11" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+          <Input
+            className="min-h-11"
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.value)}
+          />
         </label>
         <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           {t("E-mail")}
@@ -79,13 +132,8 @@ function NovoSupervisor({ aoCriar }: { aoCriar: () => void }) {
         </label>
         {categoria === "agro" && (
           <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2">
-            {t("Estados atendidos (ex.: RS, SC, PR)")}
-            <Input className="min-h-11" value={estados} onChange={(e) => setEstados(e.target.value)} />
-            {lidas.invalidas.length > 0 && (
-              <span className="text-destructive">
-                {t("Não é estado:")} {lidas.invalidas.join(", ")}
-              </span>
-            )}
+            {t("Estados atendidos")}
+            <SeletorDeUfs valor={estados} aoMudar={setEstados} rotulo={t("Estados atendidos")} />
           </label>
         )}
       </div>
@@ -93,7 +141,7 @@ function NovoSupervisor({ aoCriar }: { aoCriar: () => void }) {
         <Button
           type="button"
           className="min-h-11"
-          disabled={!nome.trim() || (categoria === "agro" && lidas.invalidas.length > 0) || criar.isPending}
+          disabled={!nome.trim() || criar.isPending}
           onClick={() => criar.mutate()}
         >
           {t("Criar supervisor")}
@@ -127,7 +175,8 @@ function CartaoDoSupervisor({
   const [aviso, setAviso] = useState<string | null>(null);
   const travado = !podeEditar || salvando;
   // Quem tem parceiros ou estados só sai passando para alguém.
-  const exigeSubstituto = parceiros > 0 || (s.categoria === "agro" && (s.ufs.length > 0 || s.padrao));
+  const exigeSubstituto =
+    parceiros > 0 || (s.categoria === "agro" && (s.ufs.length > 0 || s.padrao));
   const linha =
     s.categoria === "agro"
       ? `${t("Agro")}: ${[...s.ufs, ...(s.padrao ? [t("demais estados")] : [])].join(", ") || t("sem estados")}`
@@ -143,8 +192,13 @@ function CartaoDoSupervisor({
           </p>
         </div>
         {podeEditar && (
-          <Button type="button" variant="outline" className="min-h-11" disabled={salvando}
-            onClick={() => salvar({ tipo: "supervisor", id: s.id, ativo: true })}>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            disabled={salvando}
+            onClick={() => salvar({ tipo: "supervisor", id: s.id, ativo: true })}
+          >
             {t("Reativar")}
           </Button>
         )}
@@ -175,31 +229,33 @@ function CartaoDoSupervisor({
         </label>
         <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           {t("WhatsApp")}
-          <Contato valor={s.whatsapp} rotulo={`${t("WhatsApp")}: ${s.nome}`} desabilitado={travado}
-            aoSalvar={(v) => salvar({ tipo: "supervisor", id: s.id, whatsapp: v })} />
+          <Contato
+            valor={s.whatsapp}
+            rotulo={`${t("WhatsApp")}: ${s.nome}`}
+            desabilitado={travado}
+            aoSalvar={(v) => salvar({ tipo: "supervisor", id: s.id, whatsapp: v })}
+          />
         </label>
         <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           {t("E-mail")}
-          <Contato valor={s.email} rotulo={`${t("E-mail")}: ${s.nome}`} desabilitado={travado}
-            aoSalvar={(v) => salvar({ tipo: "supervisor", id: s.id, email: v })} />
+          <Contato
+            valor={s.email}
+            rotulo={`${t("E-mail")}: ${s.nome}`}
+            desabilitado={travado}
+            aoSalvar={(v) => salvar({ tipo: "supervisor", id: s.id, email: v })}
+          />
         </label>
       </div>
       {s.categoria === "agro" && (
         <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-          {t("Estados atendidos (ex.: RS, SC, PR)")}
-          <Contato
-            key={s.ufs.join()}
-            valor={s.ufs.join(", ") || null}
-            rotulo={`${t("Estados atendidos (ex.: RS, SC, PR)")}: ${s.nome}`}
+          {t("Estados atendidos")}
+          <SeletorDeUfs
+            valor={s.ufs}
+            rotulo={`${t("Estados atendidos")}: ${s.nome}`}
             desabilitado={travado}
-            aoSalvar={(v) => {
-              const r = lerUfs(v ?? "");
-              if (r.invalidas.length > 0) {
-                setAviso(`${t("Não é estado:")} ${r.invalidas.join(", ")}`);
-                return;
-              }
+            aoMudar={(ufs) => {
               setAviso(null);
-              salvar({ tipo: "supervisor", id: s.id, ufs: r.ufs });
+              salvar({ tipo: "supervisor", id: s.id, ufs });
             }}
           />
           {aviso && <span className="text-destructive">{aviso}</span>}
@@ -218,7 +274,12 @@ function CartaoDoSupervisor({
           {t("Supervisor padrão")}
         </label>
         {podeEditar && !desativando && (
-          <Button type="button" variant="ghost" className="min-h-11" onClick={() => setDesativando(true)}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-h-11"
+            onClick={() => setDesativando(true)}
+          >
             {t("Desativar")}
           </Button>
         )}
@@ -226,9 +287,16 @@ function CartaoDoSupervisor({
       {desativando && (
         <div className="flex flex-col gap-2 rounded-md border bg-muted/30 p-3 text-sm">
           <p>
-            {t("Quem assume os parceiros, as cidades e os estados deste supervisor? Negócios já abertos no nome dele não mudam.")}
+            {t(
+              "Quem assume os parceiros, as cidades e os estados deste supervisor? Negócios já abertos no nome dele não mudam.",
+            )}
           </p>
-          <select className={CAMPO} aria-label={`${t("Substituto")}: ${s.nome}`} value={substituto} onChange={(e) => setSubstituto(e.target.value)}>
+          <select
+            className={CAMPO}
+            aria-label={`${t("Substituto")}: ${s.nome}`}
+            value={substituto}
+            onChange={(e) => setSubstituto(e.target.value)}
+          >
             <option value="">{exigeSubstituto ? t("Escolha o substituto") : t("Ninguém")}</option>
             {substitutos.map((o) => (
               <option key={o.id} value={o.id}>
@@ -242,15 +310,23 @@ function CartaoDoSupervisor({
               className="min-h-11"
               disabled={salvando || (exigeSubstituto && !substituto)}
               onClick={() =>
-                salvar({ tipo: "supervisor", id: s.id, ativo: false, substituto_id: substituto || null }, () => {
-                  setDesativando(false);
-                  setSubstituto("");
-                })
+                salvar(
+                  { tipo: "supervisor", id: s.id, ativo: false, substituto_id: substituto || null },
+                  () => {
+                    setDesativando(false);
+                    setSubstituto("");
+                  },
+                )
               }
             >
               {t("Confirmar desativação")}
             </Button>
-            <Button type="button" variant="ghost" className="min-h-11" onClick={() => setDesativando(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              className="min-h-11"
+              onClick={() => setDesativando(false)}
+            >
               {t("Cancelar")}
             </Button>
           </div>
@@ -281,7 +357,9 @@ export function Supervisores({
     <section className="flex flex-col gap-3">
       <h2 className="text-lg font-medium">{t("Supervisores")}</h2>
       <p className="max-w-2xl text-sm text-muted-foreground">
-        {t("O supervisor padrão recebe o que o sistema não sabe localizar. Para tirar alguém, use \"Desativar\".")}
+        {t(
+          'O supervisor padrão recebe o que o sistema não sabe localizar. Para tirar alguém, use "Desativar".',
+        )}
       </p>
       {podeEditar && <NovoSupervisor aoCriar={aoCriar} />}
       <div className="flex flex-col gap-3">
@@ -289,7 +367,9 @@ export function Supervisores({
           <CartaoDoSupervisor
             key={s.id}
             s={s}
-            substitutos={supervisores.filter((o) => o.ativo && o.id !== s.id && o.categoria === s.categoria)}
+            substitutos={supervisores.filter(
+              (o) => o.ativo && o.id !== s.id && o.categoria === s.categoria,
+            )}
             parceiros={parceirosPorSupervisor.get(s.id) ?? 0}
             podeEditar={podeEditar}
             salvando={salvando}

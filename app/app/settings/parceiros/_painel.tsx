@@ -437,7 +437,7 @@ function EditorDeCidades({
                       )
                     }
                   >
-                    {t("Incluir como distrito ou povoado:")} {escrito} · {uf}
+                    {t("Outro (cidade fora da lista):")} {escrito} · {uf}
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     {t(
